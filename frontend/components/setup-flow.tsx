@@ -5,8 +5,16 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { PlusCircle, UserPlus, Send, X, Loader2, CheckCircle2, ArrowRight } from 'lucide-react';
 import { useAddress, useName } from '@coinbase/onchainkit/identity';
+import Safe, { SafeAccountConfig } from '@safe-global/protocol-kit';
+import { sepolia } from 'viem/chains';
 
 type Step = 'usernames' | 'processing' | 'verification' | 'completion';
+
+interface SafeDeploymentStatus {
+  isDeploying: boolean;
+  safeAddress?: string;
+  error?: string;
+}
 
 interface InviteEntry {
   input: string;
@@ -21,6 +29,9 @@ export default function Component() {
   const [entries, setEntries] = useState<InviteEntry[]>([
     { input: '', isValid: false, isLoading: false }
   ]);
+  const [safeDeploymentStatus, setSafeDeploymentStatus] = useState<SafeDeploymentStatus>({
+    isDeploying: false
+  });
 
   const validateAndResolveEntry = async (input: string, index: number) => {
     const newEntries = [...entries];
@@ -74,15 +85,71 @@ export default function Component() {
     }
   };
 
+  const deploySafe = async (validEntries: InviteEntry[]) => {
+    setSafeDeploymentStatus({ isDeploying: true });
+    try {
+      const ownerAddresses = validEntries
+        .filter(entry => entry.resolvedAddress)
+        .map(entry => entry.resolvedAddress as string);
+
+      const safeAccountConfig: SafeAccountConfig = {
+        owners: ownerAddresses,
+        threshold: Math.ceil(ownerAddresses.length / 2)
+      };
+
+      const protocolKit = await Safe.init({
+        provider: sepolia.rpcUrls.default.http[0],
+        signer: window.ethereum,
+        predictedSafe: {
+          safeAccountConfig
+        }
+      });
+
+      const deploymentTransaction = await protocolKit.createSafeDeploymentTransaction();
+
+      const client = await protocolKit.getSafeProvider().getExternalSigner();
+      const transactionHash = await client.sendTransaction({
+        to: deploymentTransaction.to,
+        value: BigInt(deploymentTransaction.value),
+        data: deploymentTransaction.data as `0x${string}`,
+        chain: sepolia
+      });
+
+      const transactionReceipt = await client.waitForTransactionReceipt({
+        hash: transactionHash
+      });
+
+      const safeAddress = await protocolKit.getAddress();
+      
+      setSafeDeploymentStatus({
+        isDeploying: false,
+        safeAddress
+      });
+
+      return safeAddress;
+    } catch (error) {
+      console.error('Error deploying Safe:', error);
+      setSafeDeploymentStatus({
+        isDeploying: false,
+        error: 'Failed to deploy Safe'
+      });
+      throw error;
+    }
+  };
+
   const handleInvite = async () => {
     const validEntries = entries.filter(entry => entry.isValid);
     if (validEntries.length === 0) return;
     
     setCurrentStep('processing');
     
-    // Simulate processing
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    setCurrentStep('verification');
+    try {
+      const safeAddress = await deploySafe(validEntries);
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      setCurrentStep('verification');
+    } catch (error) {
+      console.error('Failed to process invites:', error);
+    }
   };
 
   const renderStep = () => {
@@ -161,7 +228,14 @@ export default function Component() {
             <div className="flex justify-center">
               <Loader2 className="h-16 w-16 animate-spin text-blue-600" />
             </div>
-            <p className="text-xl text-gray-600">Please wait while we process your invitations...</p>
+            <p className="text-xl text-gray-600">
+              {safeDeploymentStatus.isDeploying 
+                ? "Deploying Safe smart account..."
+                : "Processing your invitations..."}
+            </p>
+            {safeDeploymentStatus.error && (
+              <p className="text-red-500">{safeDeploymentStatus.error}</p>
+            )}
           </div>
         );
 
@@ -170,8 +244,14 @@ export default function Component() {
           <div className="text-center space-y-6">
             <h2 className="text-4xl font-bold">Verify Details</h2>
             <div className="space-y-4">
-              <p className="text-xl text-gray-600">Please verify the following details:</p>
-              {/* Add verification details here */}
+              <p className="text-xl text-gray-600">Safe account deployed successfully!</p>
+              {safeDeploymentStatus.safeAddress && (
+                <div className="p-4 bg-gray-50 rounded-lg">
+                  <p className="font-mono text-sm">
+                    Safe Address: {safeDeploymentStatus.safeAddress}
+                  </p>
+                </div>
+              )}
               <Button
                 onClick={() => setCurrentStep('completion')}
                 className="flex items-center justify-center gap-2 text-xl p-6"
