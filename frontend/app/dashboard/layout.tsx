@@ -6,8 +6,8 @@ import type { Metadata } from 'next';
 import { cookies } from 'next/headers';
 
 export const metadata: Metadata = {
-  title: 'Next Shadcn Dashboard Starter',
-  description: 'Basic dashboard with Next.js and Shadcn'
+  title: 'bag bazaar',
+  description: 'bazaar for your bags'
 };
 
 export default function DashboardLayout({
@@ -21,7 +21,7 @@ export default function DashboardLayout({
   return (
     <KBar>
       <SidebarProvider defaultOpen={defaultOpen}>
-        <AppSidebar />
+        {/* <AppSidebar /> */}
         <SidebarInset>
           <Header />
           {/* page main content */}

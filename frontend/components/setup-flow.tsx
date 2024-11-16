@@ -63,21 +63,21 @@ interface InviteEntry {
 }
 
 export default function Component() {
-  // const [currentStep, setCurrentStep] = useState<Step>('usernames');
-  const [currentStep, setCurrentStep] = useState<Step>('completion');
+  const [currentStep, setCurrentStep] = useState<Step>('usernames');
+  // const [currentStep, setCurrentStep] = useState<Step>('completion');
   const [error, setError] = useState<string | null>(null);
   const [entries, setEntries] = useState<InviteEntry[]>([
     { input: '', isValid: false }
   ]);
   const [safeDeploymentStatus, setSafeDeploymentStatus] =
     useState<SafeDeploymentStatus>({
-      isDeploying: false,
-      safeAddress: '0x06B03d36d8f1A9DB0a94d2024EFC1b1FE2C59770'
+      isDeploying: false
+      // safeAddress: '0x06B03d36d8f1A9DB0a94d2024EFC1b1FE2C59770'
     });
   const [tokenCreationTxHash, setTokenCreationTxHash] = useState<
     `0x${string}` | undefined
   >();
-  const [error, setError] = useState<string | null>(null);
+  const [tokenAddress, setTokenAddress] = useState<`0x${string}` | undefined>();
 
   const {
     data: txReceipt,
@@ -239,8 +239,8 @@ export default function Component() {
 
     try {
       // Create embedded wallets for email entries first
-      const emailEntries = validEntries.filter(entry => 
-        entry.input.includes('@') && entry.input.includes('.')
+      const emailEntries = validEntries.filter(
+        (entry) => entry.input.includes('@') && entry.input.includes('.')
       );
 
       // Create embedded wallets in parallel
@@ -248,7 +248,7 @@ export default function Component() {
         const response = await fetch('/api/embedded-wallet', {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
+            'Content-Type': 'application/json'
           },
           body: JSON.stringify({
             email: entry.input,
@@ -271,12 +271,14 @@ export default function Component() {
       // Deploy the Safe with all addresses (including embedded wallet addresses)
       const safeAddress = await deploySafe(validEntries);
       console.log('safeAddress', safeAddress);
-      
+
       await new Promise((resolve) => setTimeout(resolve, 1000));
       setCurrentStep('verification');
     } catch (error) {
       console.error('Failed to process invites:', error);
-      setError(error instanceof Error ? error.message : 'Failed to process invites');
+      setError(
+        error instanceof Error ? error.message : 'Failed to process invites'
+      );
       setCurrentStep('usernames');
     }
   };
@@ -402,15 +404,16 @@ export default function Component() {
             <h2 className="text-center text-4xl font-bold">
               Create Your Token ✨
             </h2>
-            <div className="rounded-lg border border-gray p-8">
+            <div className="border-gray rounded-lg border p-8">
               {/* <p className="mb-8 text-center text-xl text-gray-600">
                 Choose a name and symbol for your shared token
               </p> */}
               <TokenCreationForm
-                onSubmit={(name, ticker, hash) => {
+                onSubmit={(name, ticker, hash, tokenAddress) => {
                   console.log('Creating token:', { name, ticker });
                   setCurrentStep('token-pending');
                   setTokenCreationTxHash(hash);
+                  setTokenAddress(tokenAddress);
                 }}
               />
             </div>
@@ -431,6 +434,15 @@ export default function Component() {
                 <BlockscoutLink
                   address={tokenCreationTxHash}
                   type="tx"
+                  className="font-mono"
+                />
+              </div>
+            )}
+            {tokenAddress && (
+              <div className="text-sm text-gray-600">
+                <BlockscoutLink
+                  address={tokenAddress}
+                  type="address"
                   className="font-mono"
                 />
               </div>

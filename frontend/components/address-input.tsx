@@ -123,7 +123,11 @@ export function AddressInput({
 
         if (isMounted) {
           setResolvedData(newResolvedData);
-          onChange(input, newResolvedData.isValid, newResolvedData.resolvedAddress);
+          onChange(
+            input,
+            newResolvedData.isValid,
+            newResolvedData.resolvedAddress
+          );
         }
       } catch (error) {
         console.error('Error in validation:', error);
@@ -140,7 +144,7 @@ export function AddressInput({
     return () => {
       isMounted = false;
     };
-  };
+  });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;

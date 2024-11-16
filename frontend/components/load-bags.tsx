@@ -283,10 +283,10 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
   };
 
   return (
-    <div className="space-y-4 rounded-lg bg-gray-50 p-6">
-      <div className="mt-4 text-2xl text-gray-900">
+    <div className="space-y-4 rounded-lg border border-gray p-6">
+      <div className="mt-4 text-2xl text-muted-foreground">
         Shared balance: ${usdBalance}
-        <div className="text-sm text-gray-500">
+        <div className="text-sm text-foreground">
           ({safeBalance ? `${formatEther(safeBalance.value)} WETH` : '0 WETH'})
         </div>
       </div>

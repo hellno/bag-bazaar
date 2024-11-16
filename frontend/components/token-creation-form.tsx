@@ -11,13 +11,20 @@ import {
   useReadContract
 } from 'wagmi';
 import { parseEther } from 'viem';
-import { base, baseSepolia, mainnet, sepolia } from 'viem/chains';
+import {
+  base,
+  baseSepolia,
+  mainnet,
+  sepolia,
+  unichainSepolia
+} from 'viem/chains';
 
 const TOKEN_FACTORY_ADDRESSES: { [chainId: number]: `0x${string}` } = {
   [base.id]: '0x250c9FB2b411B48273f69879007803790A6AeA47',
   [baseSepolia.id]: '0x928073CC726e717b4C4f6a596198c4374266aEbe',
   [mainnet.id]: '0x0000000000000000000000000000000000000000',
-  [sepolia.id]: '0x0000000000000000000000000000000000000000'
+  [sepolia.id]: '0x0000000000000000000000000000000000000000',
+  [unichainSepolia.id]: '0x928073CC726e717b4C4f6a596198c4374266aEbe'
 } as const;
 
 function getTokenFactoryAddress(chainId: number): `0x${string}` {
@@ -69,7 +76,8 @@ interface TokenCreationFormProps {
   onSubmit: (
     tokenName: string,
     tokenTicker: string,
-    hash: `0x${string}`
+    txHash: `0x${string}`,
+    predictedAddress: `0x${string}`
   ) => void;
   isLoading?: boolean;
 }
@@ -84,22 +92,8 @@ export function TokenCreationForm({
   const [error, setError] = useState<string | null>(null);
   const [isGeneratingSalt, setIsGeneratingSalt] = useState(false);
 
-  const { data: saltData, isLoading: isSaltLoading } = useReadContract({
-    address: getTokenFactoryAddress(chain?.id ?? base.id),
-    abi: TOKEN_FACTORY_ABI,
-    functionName: 'generateSalt',
-    args: [
-      address!, // deployer address
-      tokenName,
-      tokenTicker,
-      parseEther('1000000000') // supply
-    ],
-    query: {
-      enabled: !!address && !!tokenName && !!tokenTicker && !!chain
-    }
-  });
-
-  const { writeContractAsync, isPending: isContractWritePending } = useWriteContract();
+  const { writeContractAsync, isPending: isContractWritePending } =
+    useWriteContract();
   const { chain, address } = useAccount();
   const { chains } = useConfig();
 
@@ -160,7 +154,7 @@ export function TokenCreationForm({
         ]
       });
 
-      onSubmit(tokenName, tokenTicker, tx);
+      onSubmit(tokenName, tokenTicker, tx, predictedAddress);
     } catch (error) {
       console.error('Error deploying token:', error);
       setError(
