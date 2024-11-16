@@ -14,7 +14,8 @@ import {
 } from 'lucide-react';
 import { useAddress, useName } from '@coinbase/onchainkit/identity';
 import { baseSepolia } from 'viem/chains';
-import { createPublicClient, http, parseEther, privateKeyToAccount } from 'viem';
+import { createPublicClient, http, parseEther } from 'viem';
+import { privateKeyToAccount } from 'viem/accounts';
 import { createPimlicoClient } from 'permissionless/clients/pimlico';
 import { entryPoint07Address } from 'viem/account-abstraction';
 import { toSafeSmartAccount } from 'permissionless/accounts';
