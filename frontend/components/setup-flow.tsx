@@ -67,17 +67,26 @@ export default function Component() {
   };
 
   const deploySafe = async (validEntries: InviteEntry[]) => {
+    console.log('Starting Safe deployment with entries:', validEntries);
     setSafeDeploymentStatus({ isDeploying: true });
+    
     try {
       const ownerAddresses = validEntries
         .filter((entry) => entry.resolvedAddress)
         .map((entry) => entry.resolvedAddress as string);
+      
+      console.log('Filtered owner addresses:', ownerAddresses);
+      
+      const threshold = Math.ceil(ownerAddresses.length / 2);
+      console.log('Calculated threshold:', threshold);
 
       const safeAccountConfig: SafeAccountConfig = {
         owners: ownerAddresses,
-        threshold: Math.ceil(ownerAddresses.length / 2)
+        threshold
       };
+      console.log('Safe account config:', safeAccountConfig);
 
+      console.log('Initializing Safe with RPC URL:', baseSepolia.rpcUrls.default.http[0]);
       const protocolKit = await Safe.init({
         provider: baseSepolia.rpcUrls.default.http[0],
         signer: window.ethereum,
@@ -85,23 +94,34 @@ export default function Component() {
           safeAccountConfig
         }
       });
+      console.log('Protocol Kit initialized');
 
-      const deploymentTransaction =
-        await protocolKit.createSafeDeploymentTransaction();
+      console.log('Creating Safe deployment transaction...');
+      const deploymentTransaction = await protocolKit.createSafeDeploymentTransaction();
+      console.log('Deployment transaction created:', deploymentTransaction);
 
+      console.log('Getting external signer...');
       const client = await protocolKit.getSafeProvider().getExternalSigner();
+      console.log('External signer obtained');
+
+      console.log('Sending deployment transaction...');
       const transactionHash = await client.sendTransaction({
         to: deploymentTransaction.to,
         value: BigInt(deploymentTransaction.value),
         data: deploymentTransaction.data as `0x${string}`,
         chain: sepolia
       });
+      console.log('Transaction hash:', transactionHash);
 
+      console.log('Waiting for transaction receipt...');
       const transactionReceipt = await client.waitForTransactionReceipt({
         hash: transactionHash
       });
+      console.log('Transaction receipt:', transactionReceipt);
 
+      console.log('Getting Safe address...');
       const safeAddress = await protocolKit.getAddress();
+      console.log('Safe deployed at address:', safeAddress);
 
       setSafeDeploymentStatus({
         isDeploying: false,
@@ -111,9 +131,15 @@ export default function Component() {
       return safeAddress;
     } catch (error) {
       console.error('Error deploying Safe:', error);
+      console.error('Error details:', {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      });
+      
       setSafeDeploymentStatus({
         isDeploying: false,
-        error: 'Failed to deploy Safe'
+        error: `Failed to deploy Safe: ${error.message}`
       });
       throw error;
     }
