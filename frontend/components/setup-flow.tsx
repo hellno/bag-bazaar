@@ -36,7 +36,14 @@ const paymasterClient = createPimlicoClient({
   }
 });
 
-type Step = 'usernames' | 'processing' | 'verification' | 'completion' | 'token-creation' | 'token-pending' | 'token-success';
+type Step =
+  | 'usernames'
+  | 'processing'
+  | 'verification'
+  | 'completion'
+  | 'token-creation'
+  | 'token-pending'
+  | 'token-success';
 
 interface SafeDeploymentStatus {
   isDeploying: boolean;
@@ -52,13 +59,15 @@ interface InviteEntry {
 }
 
 export default function Component() {
-  const [currentStep, setCurrentStep] = useState<Step>('usernames');
+  // const [currentStep, setCurrentStep] = useState<Step>('usernames');
+  const [currentStep, setCurrentStep] = useState<Step>('completion');
   const [entries, setEntries] = useState<InviteEntry[]>([
     { input: '', isValid: false }
   ]);
   const [safeDeploymentStatus, setSafeDeploymentStatus] =
     useState<SafeDeploymentStatus>({
-      isDeploying: false
+      isDeploying: false,
+      safeAddress: '0x06B03d36d8f1A9DB0a94d2024EFC1b1FE2C59770'
     });
 
   const addEntry = () => {
@@ -253,11 +262,9 @@ export default function Component() {
       case 'verification':
         return (
           <div className="space-y-6 text-center">
-            <h2 className="text-4xl font-bold">Verify Details</h2>
+            <h2 className="text-4xl font-bold">Shared bags are ready</h2>
             <div className="space-y-4">
-              <p className="text-xl text-gray-600">
-                Safe account deployed successfully!
-              </p>
+              <p className="text-xl text-gray-600"></p>
               {safeDeploymentStatus.safeAddress && (
                 <div className="rounded-lg bg-gray-50 p-4">
                   <p className="font-mono text-sm">
@@ -280,15 +287,16 @@ export default function Component() {
           <div className="space-y-6 text-center">
             <h2 className="text-4xl font-bold">Bags are ready! 🎒</h2>
             <div className="rounded-lg bg-gray-50 p-6">
-              <p className="text-xl text-gray-600 mb-4">
-                Load them now with some ETH to get started
+              <p className="mb-4 text-xl text-gray-600">
+                Prepare your bags to get started
               </p>
-              <div className="font-mono text-sm mb-4">
-                Safe Address: {safeDeploymentStatus.safeAddress}
+              <div className="mb-4 font-mono text-sm">
+                onchain address {safeDeploymentStatus.safeAddress}
               </div>
+              <p>show value in safe here, via 1inch integration</p>
               <Button
                 onClick={() => setCurrentStep('token-creation')}
-                className="flex items-center justify-center gap-2 p-6 text-xl w-full"
+                className="flex w-full items-center justify-center gap-2 p-6 text-xl"
               >
                 Create tokens <ArrowRight className="h-6 w-6" />
               </Button>
@@ -301,12 +309,12 @@ export default function Component() {
           <div className="space-y-6 text-center">
             <h2 className="text-4xl font-bold">Create Tokens 🪙</h2>
             <div className="rounded-lg bg-gray-50 p-6">
-              <p className="text-xl text-gray-600 mb-4">
+              <p className="mb-4 text-xl text-gray-600">
                 Creating tokens for your shared bag
               </p>
               <Button
                 onClick={() => setCurrentStep('token-pending')}
-                className="flex items-center justify-center gap-2 p-6 text-xl w-full"
+                className="flex w-full items-center justify-center gap-2 p-6 text-xl"
               >
                 Start token creation <ArrowRight className="h-6 w-6" />
               </Button>
@@ -334,15 +342,15 @@ export default function Component() {
             <h2 className="text-4xl font-bold">Success! 🎉</h2>
             <CheckCircle2 className="mx-auto h-16 w-16 text-green-500" />
             <div className="rounded-lg bg-gray-50 p-6">
-              <p className="text-xl text-gray-600 mb-4">
+              <p className="mb-4 text-xl text-gray-600">
                 Your tokens have been created successfully
               </p>
-              <div className="font-mono text-sm mb-4">
+              <div className="mb-4 font-mono text-sm">
                 Token Address: {safeDeploymentStatus.tokenAddress}
               </div>
               <Button
-                onClick={() => window.location.href = '/dashboard'}
-                className="flex items-center justify-center gap-2 p-6 text-xl w-full"
+                onClick={() => (window.location.href = '/dashboard')}
+                className="flex w-full items-center justify-center gap-2 p-6 text-xl"
               >
                 Go to Dashboard <ArrowRight className="h-6 w-6" />
               </Button>
