@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { LoadBags } from '@/components/load-bags';
 import { Button } from '@/components/ui/button';
 import { AddressInput } from '@/components/address-input';
@@ -329,6 +329,11 @@ export default function Component() {
         );
 
       case 'token-pending':
+        useEffect(() => {
+          const timer = setTimeout(() => setCurrentStep('token-success'), 3000);
+          return () => clearTimeout(timer); // Cleanup on unmount
+        }, []); // Empty dependency array since we only want this to run once
+
         return (
           <div className="space-y-6 text-center">
             <h2 className="text-4xl font-bold">Creating Tokens...</h2>
@@ -338,7 +343,6 @@ export default function Component() {
             <p className="text-xl text-gray-600">
               Please wait while we create your tokens
             </p>
-            {setTimeout(() => setCurrentStep('token-success'), 3000)}
           </div>
         );
 
