@@ -5,12 +5,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Loader2, ArrowRight, Wallet, Send } from 'lucide-react';
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger
-} from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useWriteContract } from 'wagmi';
 import { buildSwapTransaction, getTokens } from '@coinbase/onchainkit/api';
 import type { Token } from '@coinbase/onchainkit/token';
@@ -213,6 +208,10 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
 
   return (
     <div className="space-y-4 rounded-lg bg-gray-50 p-6">
+      <div className="mt-4 text-xl text-gray-900">
+        Safe Balance:{' '}
+        {safeBalance ? `${formatEther(safeBalance.value)} ETH` : '0 ETH'}
+      </div>
       <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-2 text-sm text-gray-500">
           <Wallet className="h-4 w-4" />
@@ -278,7 +277,9 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
                           />
                         )}
                         <span>{token.symbol}</span>
-                        <span className="text-sm text-gray-500">({token.name})</span>
+                        <span className="text-sm text-gray-500">
+                          ({token.name})
+                        </span>
                       </div>
                     </SelectItem>
                   ))
@@ -361,7 +362,9 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
                           />
                         )}
                         <span>{token.symbol}</span>
-                        <span className="text-sm text-gray-500">({token.name})</span>
+                        <span className="text-sm text-gray-500">
+                          ({token.name})
+                        </span>
                       </div>
                     </SelectItem>
                   ))
@@ -397,11 +400,6 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
       </Tabs>
 
       {error && <p className="text-sm text-red-500">{error}</p>}
-
-      <div className="mt-4 text-sm text-gray-500">
-        Safe Balance:{' '}
-        {safeBalance ? `${formatEther(safeBalance.value)} ETH` : '0 ETH'}
-      </div>
     </div>
   );
 }
