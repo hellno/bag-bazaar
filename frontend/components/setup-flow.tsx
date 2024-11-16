@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { LoadBags } from '@/components/load-bags';
 import { Button } from '@/components/ui/button';
+import { BlockscoutLink } from '@/components/ui/blockscout-link';
 import { AddressInput } from '@/components/address-input';
 import {
   PlusCircle,
@@ -273,7 +274,7 @@ export default function Component() {
                 <div className="rounded-lg bg-gray-50 p-4">
                   <p className="font-mono text-sm">
                     Safe Address:{' '}
-                    {`https://base.blockscout.com/address/${safeDeploymentStatus.safeAddress}`}
+                    <BlockscoutLink address={safeDeploymentStatus.safeAddress} />
                   </p>
                 </div>
               )}
@@ -297,7 +298,7 @@ export default function Component() {
               </p>
               <div className="mb-6 font-mono text-sm">
                 Safe Address:{' '}
-                {`https://base.blockscout.com/address/${safeDeploymentStatus.safeAddress}`}
+                <BlockscoutLink address={safeDeploymentStatus.safeAddress ?? ''} />
               </div>
 
               {safeDeploymentStatus.safeAddress && (
@@ -359,7 +360,10 @@ export default function Component() {
                 Your tokens have been created successfully
               </p>
               <div className="mb-4 font-mono text-sm">
-                Token Address: {safeDeploymentStatus.tokenAddress}
+                Token Address:{' '}
+                {safeDeploymentStatus.tokenAddress && (
+                  <BlockscoutLink address={safeDeploymentStatus.tokenAddress} />
+                )}
               </div>
               <Button
                 onClick={() => (window.location.href = '/dashboard')}
