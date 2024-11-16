@@ -24,7 +24,9 @@ import {
   SDK,
   HashLock,
   PrivateKeyProviderConnector,
-  NetworkEnum
+  NetworkEnum,
+  SupportedChain,
+  QuoteParams
 } from '@1inch/cross-chain-sdk';
 import { encodePacked, keccak256 } from 'viem';
 
