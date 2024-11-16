@@ -7,5 +7,7 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
+  // redirect to /dashboard
+
   return <SignInViewPage />;
 }

@@ -1,15 +1,20 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  async redirects() {
+    return [
+      // Basic redirect
+      {
+        source: '/',
+        destination: '/dashboard/overview',
+        permanent: false
+      }
+    ];
+  },
   images: {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'utfs.io',
-        port: ''
-      },
-      {
-        protocol: 'https',
-        hostname: 'api.slingacademy.com',
+        hostname: '*',
         port: ''
       }
     ]
