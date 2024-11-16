@@ -327,9 +327,10 @@ export default function Component() {
                 Choose a name and symbol for your shared token
               </p> */}
               <TokenCreationForm
-                onSubmit={(name, ticker) => {
+                onSubmit={(name, ticker, hash) => {
                   console.log('Creating token:', { name, ticker });
                   setCurrentStep('token-pending');
+                  setTokenCreationTxHash(hash);
                 }}
               />
             </div>
