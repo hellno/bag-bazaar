@@ -5,6 +5,8 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Loader2, ArrowRight, Wallet } from 'lucide-react';
+import { buildSwapTransaction } from '@coinbase/onchainkit/api';
+import type { Token } from '@coinbase/onchainkit/token';
 import { parseEther, formatEther, createPublicClient, http } from 'viem';
 import { baseSepolia } from 'viem/chains';
 import { useBalance, useWalletClient } from 'wagmi';
@@ -55,73 +57,24 @@ function isValidToken(
 }
 
 const SUPPORTED_NETWORKS = {
-  [NetworkEnum.ARBITRUM]: {
-    // 42161
-    name: 'Arbitrum',
-    tokens: {
-      USDC: {
-        address: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831',
-        symbol: 'USDC',
-        name: 'USD Coin'
-      },
-      WETH: {
-        address: '0x82af49447d8a07e3bd95bd0d56f35241523fbab1',
-        symbol: 'WETH',
-        name: 'Wrapped Ethereum'
-      }
-    }
-  },
-  [NetworkEnum.COINBASE]: {
-    // 8453
+  [NetworkEnum.BASE]: {
     name: 'Base',
     tokens: {
       ETH: {
-        address: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+        name: 'Ethereum',
+        address: '',
         symbol: 'ETH',
-        name: 'Ethereum'
+        decimals: 18,
+        image: 'https://wallet-api-production.s3.amazonaws.com/uploads/tokens/eth_288.png',
+        chainId: 8453
       },
       USDC: {
+        name: 'USD Coin',
         address: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
         symbol: 'USDC',
-        name: 'USD Coin'
-      },
-      WETH: {
-        address: '0x4200000000000000000000000000000000000006',
-        symbol: 'WETH',
-        name: 'Wrapped Ethereum'
-      }
-    }
-  },
-  [NetworkEnum.ETHEREUM]: {
-    // 1
-    name: 'Ethereum',
-    tokens: {
-      WETH: {
-        symbol: 'WETH',
-        name: 'Wrapped Ethereum',
-        address: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-      }
-    }
-  },
-  [NetworkEnum.OPTIMISM]: {
-    // 10
-    name: 'OP Mainnet',
-    tokens: {
-      WETH: {
-        symbol: 'WETH',
-        name: 'Wrapped Ethereum',
-        address: '0x4200000000000000000000000000000000000006'
-      }
-    }
-  },
-  [NetworkEnum.GNOSIS]: {
-    // 100
-    name: 'Gnosis',
-    tokens: {
-      WETH: {
-        symbol: 'WETH',
-        name: 'Wrapped Ethereum',
-        address: '0x6A023CCd1ff6F2045C3309768eAd9E68F978f6e1'
+        decimals: 6,
+        image: 'https://d3r81g40ycuhqg.cloudfront.net/wallet/wais/44/2b/442b80bd16af0c0d9b22e03a16753823fe826e5bfd457292b55fa0ba8c1ba213',
+        chainId: 8453
       }
     }
   }
@@ -241,7 +194,7 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
             disabled={isLoading}
           />
           <Button
-            onClick={handleCrossChainTransfer}
+            onClick={handleSwap}
             disabled={isLoading || !amount}
             className="min-w-[120px]"
           >
