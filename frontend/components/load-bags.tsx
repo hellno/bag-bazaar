@@ -302,7 +302,7 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
           : HashLock.forMultipleFills(
               // @ts-ignore The SDK expects MerkleLeaf[] but the type definition seems incorrect
               secretHashes.map((secretHash, i) => ({
-                _tag: "MerkleLeaf" as const,
+                _tag: 'MerkleLeaf' as const,
                 value: keccak256(
                   encodePacked(
                     ['uint64', 'bytes32'],
@@ -386,8 +386,12 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
           ))}
         </SelectContent>
       </Select>
-
-      <Select value={selectedToken} onValueChange={setSelectedToken}>
+      <Select
+        value={selectedToken}
+        onValueChange={(value: string) =>
+          setSelectedToken(value as SupportedToken)
+        }
+      >
         <SelectTrigger>
           <SelectValue placeholder="Select token" />
         </SelectTrigger>
