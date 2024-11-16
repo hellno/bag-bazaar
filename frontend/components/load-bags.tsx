@@ -85,7 +85,6 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
     chainId: base.id
   });
 
-  // Get the safe's current WETH balance
   const { data: safeBalance } = useBalance({
     address: safeAddress as `0x${string}`,
     token: WETH_ADDRESS as `0x${string}`,
@@ -193,8 +192,8 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
 
   return (
     <div className="space-y-4 rounded-lg bg-gray-50 p-6">
-      <div className="mt-4 text-xl text-gray-900">
-        Safe Balance:{' '}
+      <div className="mt-4 text-2xl text-gray-900">
+        Shared balance{' '}
         {safeBalance ? `${formatEther(safeBalance.value)} WETH` : '0 WETH'}
       </div>
       <div className="mb-4 flex items-center justify-between">
