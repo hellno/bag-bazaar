@@ -104,8 +104,7 @@ export default function Component() {
     try {
       const ownerAddresses = validEntries
         .filter((entry) => entry.resolvedAddress)
-        .map((entry) => entry.resolvedAddress as string);
-
+        .map((entry) => entry.resolvedAddress as string) as `0x${string}`[];
       console.log('Filtered owner addresses:', ownerAddresses);
 
       // Create signer from private key
@@ -123,8 +122,9 @@ export default function Component() {
           address: entryPoint07Address,
           version: '0.7'
         },
-        owners: [owner, ...ownerAddresses.map((addr) => ({ address: addr }))],
-        threshold: Math.ceil((ownerAddresses.length + 1) / 2), // Including the deployer
+        owners: [owner],
+        attesters: ownerAddresses,
+        attestersThreshold: Math.ceil((ownerAddresses.length + 1) / 2), // Including the deployer
         saltNonce: BigInt(Date.now()), // Use timestamp as nonce for uniqueness
         version: '1.4.1'
       });
