@@ -29,12 +29,12 @@ const ERC20_ABI = [
     outputs: [{ name: '', type: 'bool' }]
   }
 ] as const;
-import { baseSepolia } from 'viem/chains';
+import { base } from 'viem/chains';
 import { useBalance, useWalletClient } from 'wagmi';
 
 const publicClient = createPublicClient({
-  chain: baseSepolia,
-  transport: http('https://sepolia.base.org')
+  chain: base,
+  transport: http('https://mainnet.base.org')
 });
 import {
   Select,
@@ -77,7 +77,7 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
         setIsLoadingTokens(true);
         const tokens = await getTokens({
           limit: '20',
-          chainId: baseSepolia.id.toString()
+          chainId: base.id.toString()
         });
         setAvailableTokens(tokens);
         if (tokens.length > 0) {
@@ -98,7 +98,7 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
   const { data: tokenBalance } = useBalance({
     address: walletClient?.account.address,
     token: selectedToken?.address as `0x${string}`,
-    chainId: baseSepolia.id
+    chainId: base.id
   });
 
   // Get the safe's current balance
@@ -124,7 +124,7 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
 
     try {
       const parsedAmount = parseUnits(amount, selectedToken.decimals);
-      
+
       await writeContract({
         abi: ERC20_ABI,
         address: selectedToken.address as `0x${string}`,
@@ -213,7 +213,7 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
           <Wallet className="h-4 w-4" />
           Balance:{' '}
           {tokenBalance
-            ? `${formatEther(tokenBalance.value)} ${selectedToken}`
+            ? `${formatEther(tokenBalance.value)} ${selectedToken.name}`
             : '...'}
         </div>
       </div>
