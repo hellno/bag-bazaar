@@ -73,17 +73,19 @@ export default function Component() {
       isDeploying: false,
       safeAddress: '0x06B03d36d8f1A9DB0a94d2024EFC1b1FE2C59770'
     });
-  const [tokenCreationTxHash, setTokenCreationTxHash] = useState<`0x${string}` | undefined>();
+  const [tokenCreationTxHash, setTokenCreationTxHash] = useState<
+    `0x${string}` | undefined
+  >();
   const [error, setError] = useState<string | null>(null);
 
-  const { 
+  const {
     data: txReceipt,
     isSuccess: isTxSuccess,
     isPending: isTxPending,
     isError: isTxError
   } = useTransactionReceipt({
     hash: tokenCreationTxHash,
-    enabled: !!tokenCreationTxHash,
+    enabled: !!tokenCreationTxHash
   });
 
   useEffect(() => {
@@ -91,17 +93,23 @@ export default function Component() {
       try {
         const tokenDeploymentLog = txReceipt.logs[0];
         if (tokenDeploymentLog) {
-          setSafeDeploymentStatus(prev => ({
+          setSafeDeploymentStatus((prev) => ({
             ...prev,
             tokenAddress: tokenDeploymentLog.address
           }));
           setCurrentStep('token-success');
           setError(null);
         } else {
-          throw new Error('Could not find token deployment event in transaction logs');
+          throw new Error(
+            'Could not find token deployment event in transaction logs'
+          );
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to process transaction receipt');
+        setError(
+          err instanceof Error
+            ? err.message
+            : 'Failed to process transaction receipt'
+        );
         setCurrentStep('token-creation');
       }
     } else if (isTxError) {
@@ -309,7 +317,7 @@ export default function Component() {
             <div className="space-y-4">
               <p className="text-xl text-gray-600"></p>
               {safeDeploymentStatus.safeAddress && (
-                <div className="rounded-lg bg-gray-50 p-4">
+                <div className="rounded-lg p-4">
                   <p className="font-mono text-sm">
                     Safe Address:{' '}
                     <BlockscoutLink
@@ -332,10 +340,10 @@ export default function Component() {
         return (
           <div className="space-y-6 text-center">
             <h2 className="text-4xl font-bold">Shared bag is ready 🎒</h2>
-            <div className="rounded-lg bg-gray-50 p-6">
-              <p className="mb-4 text-xl text-gray-600">
+            <div className="rounded-lg p-6">
+              {/* <p className="mb-4 text-xl text-gray-600">
                 Prepare your shared bag
-              </p>
+              </p> */}
               <div className="mb-6 font-mono text-sm">
                 Safe Address:{' '}
                 <BlockscoutLink
@@ -359,7 +367,7 @@ export default function Component() {
             <h2 className="text-center text-4xl font-bold">
               Create Your Token ✨
             </h2>
-            <div className="rounded-lg bg-gray-50 p-8">
+            <div className="rounded-lg border border-gray p-8">
               {/* <p className="mb-8 text-center text-xl text-gray-600">
                 Choose a name and symbol for your shared token
               </p> */}
@@ -393,15 +401,11 @@ export default function Component() {
               </div>
             )}
             <p className="text-xl text-gray-600">
-              {isTxPending 
-                ? "Waiting for transaction confirmation..." 
-                : "Preparing your tokens..."}
+              {isTxPending
+                ? 'Waiting for transaction confirmation...'
+                : 'Preparing your tokens...'}
             </p>
-            {error && (
-              <p className="text-red-500 mt-4">
-                {error}
-              </p>
-            )}
+            {error && <p className="mt-4 text-red-500">{error}</p>}
             {process.env.NODE_ENV === 'development' && (
               <Button
                 onClick={() => setCurrentStep('token-success')}
@@ -421,7 +425,7 @@ export default function Component() {
             <CheckCircle2 className="mx-auto h-16 w-16 text-green-500" />
             <div className="rounded-lg bg-gray-50 p-6">
               <p className="mb-4 text-xl text-gray-600">
-                Your tokens have been created successfully
+                Your token has been launched successfully!
               </p>
               <div className="mb-4 font-mono text-sm">
                 Token Address:{' '}
@@ -429,12 +433,26 @@ export default function Component() {
                   <BlockscoutLink address={safeDeploymentStatus.tokenAddress} />
                 )}
               </div>
-              <Button
-                onClick={() => (window.location.href = '/dashboard')}
-                className="flex w-full items-center justify-center gap-2 p-6 text-xl"
-              >
-                Go to Dashboard <ArrowRight className="h-6 w-6" />
-              </Button>
+              {JSON.stringify(txReceipt, (_, v) =>
+                typeof v === 'bigint' ? v.toString() : v
+              )}
+              <div className="mb-4 font-mono text-sm">
+                Transaction:
+                {tokenCreationTxHash && (
+                  <div className="text-sm text-gray-600">
+                    <BlockscoutLink
+                      address={tokenCreationTxHash}
+                      type="tx"
+                      className="font-mono"
+                    />
+                  </div>
+                )}
+              </div>
+              <a href="">
+                <Button className="flex w-full items-center justify-center gap-2 p-6 text-xl">
+                  Share on Farcaster <ArrowRight className="h-6 w-6" />
+                </Button>
+              </a>
             </div>
           </div>
         );
