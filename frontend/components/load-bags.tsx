@@ -6,8 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Loader2, ArrowRight, Wallet } from 'lucide-react';
 import { parseEther, formatEther } from 'viem';
 import { useBalance, useWalletClient } from 'wagmi';
-import { Web3Like } from '@1inch/cross-chain-sdk';
-import type { TransactionConfig } from 'web3-core';
+import { Web3Like } from '@1inch/cross-chain-sdk/web3-provider-connector';
 import {
   Select,
   SelectContent,
@@ -204,9 +203,12 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
         process.env.NEXT_PUBLIC_SIGNER_PRIVATE_KEY!,
         {
           eth: {
-            async call(transactionConfig: TransactionConfig): Promise<string> {
+            async call(transactionConfig: {
+              data?: string;
+              to?: string;
+            }): Promise<string> {
               if (!walletClient) throw new Error('Wallet client not available');
-              
+
               const result = await walletClient.request({
                 method: 'eth_call',
                 params: [
@@ -221,7 +223,7 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
                   'latest'
                 ]
               });
-              
+
               return result as string;
             }
           },
@@ -233,7 +235,7 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
 
             return await walletClient.sendTransaction({
               to: tx.to as `0x${string}`,
-              data: tx.data as `0x${string}`, 
+              data: tx.data as `0x${string}`,
               value: BigInt(tx.value || 0),
               chainId: Number(tx.chainId)
             });
