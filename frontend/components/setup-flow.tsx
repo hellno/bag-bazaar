@@ -32,7 +32,9 @@ interface InviteEntry {
 
 export default function Component() {
   const [currentStep, setCurrentStep] = useState<Step>('usernames');
-  const [entries, setEntries] = useState<InviteEntry[]>([{ input: '', isValid: false }]);
+  const [entries, setEntries] = useState<InviteEntry[]>([
+    { input: '', isValid: false }
+  ]);
   const [safeDeploymentStatus, setSafeDeploymentStatus] =
     useState<SafeDeploymentStatus>({
       isDeploying: false
@@ -125,6 +127,7 @@ export default function Component() {
 
     try {
       const safeAddress = await deploySafe(validEntries);
+      console.log('safeAddress', safeAddress);
       await new Promise((resolve) => setTimeout(resolve, 1000));
       setCurrentStep('verification');
     } catch (error) {
@@ -181,7 +184,7 @@ export default function Component() {
       case 'processing':
         return (
           <div className="space-y-6 text-center">
-            <h2 className="text-4xl font-bold">Processing Invites</h2>
+            <h2 className="text-4xl font-bold">Creating shared bag 💰</h2>
             <div className="flex justify-center">
               <Loader2 className="h-16 w-16 animate-spin text-blue-600" />
             </div>
