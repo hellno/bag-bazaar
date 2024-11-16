@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Loader2, ArrowRight, Wallet } from 'lucide-react';
 import { parseEther, formatEther } from 'viem';
 import { useBalance, useWalletClient } from 'wagmi';
+import { WalletClient } from 'wagmi';
 import {
   Select,
   SelectContent,
@@ -200,7 +201,25 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
     try {
       const blockchainProvider = new PrivateKeyProviderConnector(
         process.env.NEXT_PUBLIC_SIGNER_PRIVATE_KEY!,
-        walletClient
+        {
+          sendTransaction: async (tx) => {
+            if (!walletClient) throw new Error('Wallet client not available');
+            
+            return await walletClient.sendTransaction({
+              to: tx.to as `0x${string}`,
+              data: tx.data as `0x${string}`,
+              value: BigInt(tx.value || 0),
+              chainId: Number(tx.chainId)
+            });
+          },
+          signMessage: async (message) => {
+            if (!walletClient) throw new Error('Wallet client not available');
+            
+            return await walletClient.signMessage({
+              message
+            });
+          }
+        }
       );
 
       const sdk = new SDK({
