@@ -118,6 +118,70 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
     // watch: true
   });
 
+  const handleSwap = async () => {
+    if (!walletClient || !amount || !safeAddress) {
+      setError('Missing required parameters');
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      // Get token configurations
+      const fromTokenConfig = SUPPORTED_NETWORKS[sourceChain].tokens[selectedToken];
+      
+      // Create token objects for OnchainKit
+      const fromToken: Token = {
+        name: fromTokenConfig.name,
+        address: fromTokenConfig.address,
+        symbol: fromTokenConfig.symbol,
+        decimals: fromTokenConfig.decimals,
+        image: fromTokenConfig.image,
+        chainId: fromTokenConfig.chainId
+      };
+
+      const toToken: Token = {
+        name: 'Ethereum',
+        address: '',
+        symbol: 'ETH',
+        decimals: 18,
+        image: 'https://wallet-api-production.s3.amazonaws.com/uploads/tokens/eth_288.png',
+        chainId: baseSepolia.id
+      };
+
+      // Build swap transaction
+      const swapTx = await buildSwapTransaction({
+        fromAddress: walletClient.account.address,
+        from: fromToken,
+        to: toToken,
+        amount: amount,
+        useAggregator: false
+      });
+
+      // Execute the transaction
+      const hash = await walletClient.sendTransaction({
+        to: swapTx.to as `0x${string}`,
+        data: swapTx.data as `0x${string}`,
+        value: BigInt(swapTx.value || 0)
+      });
+
+      console.log('Swap transaction submitted:', hash);
+      
+      // Wait for transaction confirmation
+      await publicClient.waitForTransactionReceipt({ hash });
+      
+      // Call success callback if provided
+      onSuccess?.();
+
+    } catch (err) {
+      console.error('Swap error:', err);
+      setError(err instanceof Error ? err.message : 'Failed to process swap');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     // Only allow numbers and decimals
