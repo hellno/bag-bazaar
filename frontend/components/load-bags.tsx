@@ -372,7 +372,7 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
         value={sourceChain.toString()}
         onValueChange={(value) => {
           setSourceChain(Number(value) as NetworkEnum);
-          setSelectedToken('ETH');
+          setSelectedToken('WETH');
         }}
       >
         <SelectTrigger>
