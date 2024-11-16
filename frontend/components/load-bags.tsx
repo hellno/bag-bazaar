@@ -42,7 +42,12 @@ function getRandomBytes32(): string {
   );
 }
 
-// Type definitions for supported tokens and networks
+// Type definitions
+type MerkleLeaf = {
+  _tag: "MerkleLeaf";
+  value: `0x${string}`;
+};
+
 type SupportedToken =
   keyof (typeof SUPPORTED_NETWORKS)[NetworkEnum.ARBITRUM]['tokens'];
 
@@ -300,15 +305,18 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
         secretsCount === 1
           ? HashLock.forSingleFill(secrets[0])
           : HashLock.forMultipleFills(
-              secretHashes.map((secretHash, i) => ({
-                _tag: 'MerkleLeaf' as const,
-                value: keccak256(
-                  encodePacked(
-                    ['uint64', 'bytes32'],
-                    [BigInt(i), secretHash as `0x${string}`]
-                  ) as `0x${string}`
-                )
-              }))
+              secretHashes.map((secretHash, i) => {
+                const leaf: MerkleLeaf = {
+                  _tag: "MerkleLeaf",
+                  value: keccak256(
+                    encodePacked(
+                      ['uint64', 'bytes32'],
+                      [BigInt(i), secretHash as `0x${string}`]
+                    ) as `0x${string}`
+                  )
+                };
+                return leaf;
+              })
             );
 
       // Place order
