@@ -400,8 +400,10 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
             ([symbol, token]) => (
               <SelectItem key={symbol} value={symbol}>
                 <div className="flex items-center gap-2">
-                  <span>{token.symbol}</span>
-                  <span className="text-sm text-gray-500">({token.name})</span>
+                  <span>{(token as { symbol: string }).symbol}</span>
+                  <span className="text-sm text-gray-500">
+                    ({(token as { name: string }).name})
+                  </span>
                 </div>
               </SelectItem>
             )
