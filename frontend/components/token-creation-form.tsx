@@ -99,11 +99,25 @@ export function TokenCreationForm({
     }
   });
 
-  const { writeContractAsync, isPending: isContractWritePending } =
-    useWriteContract();
+  const { writeContractAsync, isPending: isContractWritePending } = useWriteContract();
   const { chain, address } = useAccount();
   const { chains } = useConfig();
-  console.log('chain', chain, 'address', address, 'chains', chains);
+
+  const { data: saltData, isLoading: isSaltLoading } = useReadContract({
+    address: getTokenFactoryAddress(chain?.id ?? base.id),
+    abi: TOKEN_FACTORY_ABI,
+    functionName: 'generateSalt',
+    args: [
+      address!, // deployer address
+      tokenName,
+      tokenTicker,
+      parseEther('1000000000') // supply
+    ],
+    query: {
+      enabled: !!address && !!tokenName && !!tokenTicker && !!chain
+    }
+  });
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
