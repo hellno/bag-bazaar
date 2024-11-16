@@ -1,2 +1,6 @@
-@openzeppelin/contracts/=node_modules/@openzeppelin/contracts/
+@openzeppelin/=node_modules/@openzeppelin/
+ds-test/=lib/solmate/lib/ds-test/src/
 forge-std/=node_modules/forge-std/
+solmate/=lib/solmate/src/
+v3-core/=lib/v3-core/contracts/
+v3-periphery/=lib/v3-periphery/contracts/

@@ -3,10 +3,9 @@ pragma solidity >=0.8.25;
 
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {TickMath} from "@uniswap/v3-core/contracts/libraries/TickMath.sol";
-
-import {INonfungiblePositionManager, IUniswapV3Factory, ILockerFactory, ILocker, ExactInputSingleParams, ISwapRouter} from "./interface.sol";
-import {Bytes32AddressLib} from "./Bytes32AddressLib.sol";
+import {TickMath} from "v3-core/libraries/TickMath.sol";
+import {INonfungiblePositionManager, IUniswapV3Factory, ILockerFactory, ILocker, ExactInputSingleParams, ISwapRouter} from "./interfaces.sol";
+import {Bytes32AddressLib} from "solmate/utils/Bytes32AddressLib.sol";
 
 contract Token is ERC20 {
     constructor(

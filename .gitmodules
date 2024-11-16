@@ -1,0 +1,9 @@
+[submodule "contracts/lib/v3-core"]
+	path = contracts/lib/v3-core
+	url = https://github.com/uniswap/v3-core
+[submodule "contracts/lib/v3-periphery"]
+	path = contracts/lib/v3-periphery
+	url = https://github.com/uniswap/v3-periphery
+[submodule "contracts/lib/solmate"]
+	path = contracts/lib/solmate
+	url = https://github.com/transmissions11/solmate
