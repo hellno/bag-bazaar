@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { AddressInput } from '@/components/address-input';
 import {
   PlusCircle,
   UserPlus,
@@ -27,82 +27,26 @@ interface SafeDeploymentStatus {
 interface InviteEntry {
   input: string;
   resolvedAddress?: string;
-  resolvedName?: string;
-  isValid: boolean;
-  isLoading: boolean;
 }
 
 export default function Component() {
   const [currentStep, setCurrentStep] = useState<Step>('usernames');
   const [entries, setEntries] = useState<InviteEntry[]>([
-    { input: '', isValid: false, isLoading: false }
+    { input: '' }
   ]);
   const [safeDeploymentStatus, setSafeDeploymentStatus] =
     useState<SafeDeploymentStatus>({
       isDeploying: false
     });
 
-  // Create arrays of resolved names and addresses using hooks
-  const resolvedNames = entries.map((entry) =>
-    useName({ address: entry.input })
-  );
-  const resolvedAddresses = entries.map((entry) =>
-    useAddress({ name: entry.input })
-  );
-
-  // Update entries when resolved data changes
-  useEffect(() => {
-    entries.forEach((entry, index) => {
-      if (entry.input) {
-        validateAndResolveEntry(entry.input, index);
-      }
-    });
-  }, [resolvedNames, resolvedAddresses]);
-
-  const validateAndResolveEntry = async (input: string, index: number) => {
-    const newEntries = [...entries];
-    const entry = newEntries[index];
-    entry.input = input;
-    entry.isLoading = true;
-
-    // Reset previous resolutions
-    entry.resolvedAddress = undefined;
-    entry.resolvedName = undefined;
-
-    // Check if it's an ETH address
-    const isEthAddress = /^0x[a-fA-F0-9]{40}$/.test(input);
-    // Check if it's an ENS name
-    const isEns = input.toLowerCase().endsWith('.eth');
-
-    try {
-      if (isEthAddress) {
-        const name = resolvedNames[index].data;
-        entry.resolvedName = name;
-        entry.resolvedAddress = input;
-        entry.isValid = true;
-      } else if (isEns) {
-        const address = resolvedAddresses[index].data;
-        if (address) {
-          entry.resolvedAddress = address;
-          entry.resolvedName = input;
-          entry.isValid = true;
-        }
-      }
-    } catch (error) {
-      console.error('Error resolving address/name:', error);
-      entry.isValid = false;
-    }
-
-    entry.isLoading = false;
-    setEntries(newEntries);
-  };
-
   const addEntry = () => {
-    setEntries([...entries, { input: '', isValid: false, isLoading: false }]);
+    setEntries([...entries, { input: '' }]);
   };
 
-  const updateEntry = (index: number, value: string) => {
-    validateAndResolveEntry(value, index);
+  const updateEntry = (index: number, input: string, resolvedAddress?: string) => {
+    const newEntries = [...entries];
+    newEntries[index] = { input, resolvedAddress };
+    setEntries(newEntries);
   };
 
   const removeEntry = (index: number) => {
@@ -193,41 +137,14 @@ export default function Component() {
             </p> */}
             <div className="space-y-6">
               {entries.map((entry, index) => (
-                <div key={index} className="space-y-2">
-                  <div className="flex items-center gap-4">
-                    <Input
-                      type="text"
-                      placeholder="0x... or name.eth"
-                      value={entry.input}
-                      onChange={(e) => updateEntry(index, e.target.value)}
-                      className={`w-full rounded-lg p-6 text-3xl ${
-                        entry.isValid ? 'border-green-500' : ''
-                      }`}
-                    />
-                    {entries.length > 1 && (
-                      <Button
-                        onClick={() => removeEntry(index)}
-                        variant="ghost"
-                        className="p-6"
-                      >
-                        <X className="h-8 w-8 text-red-500" />
-                      </Button>
-                    )}
-                  </div>
-                  {entry.isLoading && (
-                    <div className="flex items-center gap-2 text-sm text-gray-500">
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Resolving...
-                    </div>
-                  )}
-                  {entry.isValid && (
-                    <div className="text-sm text-green-600">
-                      {entry.resolvedAddress &&
-                        `Address: ${entry.resolvedAddress}`}
-                      {entry.resolvedName && ` (${entry.resolvedName})`}
-                    </div>
-                  )}
-                </div>
+                <AddressInput
+                  key={index}
+                  value={entry.input}
+                  onChange={(value, resolvedAddress) => 
+                    updateEntry(index, value, resolvedAddress)}
+                  onRemove={entries.length > 1 ? () => removeEntry(index) : undefined}
+                  showRemoveButton={entries.length > 1}
+                />
               ))}
             </div>
             <Button
