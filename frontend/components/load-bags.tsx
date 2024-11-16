@@ -70,9 +70,10 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
     symbol: 'WETH',
     decimals: 18,
     chainId: base.id,
-    image: 'https://wallet-api-production.s3.amazonaws.com/uploads/tokens/weth_288.png'
+    image:
+      'https://wallet-api-production.s3.amazonaws.com/uploads/tokens/weth_288.png'
   });
-  
+
   const [amount, setAmount] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -213,10 +214,11 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
         <TabsContent value="send" className="space-y-4">
           <div className="rounded-lg border p-4">
             <h3 className="mb-4 text-lg font-medium">Send WETH to Safe</h3>
-            
+
             <div className="mb-4 flex items-center gap-2 text-sm text-gray-500">
               <Wallet className="h-4 w-4" />
-              Balance: {tokenBalance ? `${formatEther(tokenBalance.value)} WETH` : '...'}
+              Balance:{' '}
+              {tokenBalance ? `${formatEther(tokenBalance.value)} WETH` : '...'}
             </div>
 
             <div className="mt-4 space-y-4">
@@ -228,7 +230,7 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
                 className="h-16 text-2xl"
                 disabled={isLoading}
               />
-              
+
               <Button
                 onClick={handleSendToken}
                 disabled={isLoading || !amount}
@@ -250,12 +252,12 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
           <div className="rounded-lg border p-4">
             <h3 className="mb-4 text-lg font-medium">Swap Tokens</h3>
             <Select
+              className="h-16 text-2xl"
               value={selectedToken?.address ?? ''}
               onValueChange={(value) => {
-                // Simplified since we're only using WETH
-                console.log('Token selection disabled - using WETH only');
+                const token = availableTokens.find((t) => t.address === value);
+                setSelectedToken(token ?? null);
               }}
-              disabled={true}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select token">
@@ -294,13 +296,13 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
                 placeholder={`Amount in ${selectedToken?.symbol ?? ''}`}
                 value={amount}
                 onChange={handleAmountChange}
-                className="text-xl"
+                className="h-16 text-2xl"
                 disabled={isLoading}
               />
               <Button
                 onClick={handleSwap}
                 disabled={isLoading || !amount || !selectedToken}
-                className="w-full"
+                className="h-16 w-full text-xl"
               >
                 {isLoading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
