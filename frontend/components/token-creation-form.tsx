@@ -4,7 +4,12 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Loader2 } from 'lucide-react';
-import { useWriteContract, useAccount, useConfig, readContract } from 'wagmi';
+import {
+  useWriteContract,
+  useAccount,
+  useConfig,
+  useReadContract
+} from 'wagmi';
 import { parseEther } from 'viem';
 import { base, baseSepolia, mainnet, sepolia } from 'viem/chains';
 
