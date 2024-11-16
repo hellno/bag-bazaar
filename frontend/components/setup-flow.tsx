@@ -78,8 +78,8 @@ export default function Component() {
   const updateEntry = (
     index: number,
     input: string,
-    resolvedAddress?: string,
-    isValid: boolean
+    isValid: boolean,
+    resolvedAddress?: string
   ) => {
     const newEntries = [...entries];
     newEntries[index] = { input, resolvedAddress, isValid };
@@ -214,7 +214,7 @@ export default function Component() {
                   key={`address-input-${index}-${entries.length}`}
                   value={entry.input}
                   onChange={(value, isValid, resolvedAddress) =>
-                    updateEntry(index, value, resolvedAddress, isValid)
+                    updateEntry(index, value, isValid, resolvedAddress)
                   }
                   onRemove={
                     entries.length > 1 ? () => removeEntry(index) : undefined
