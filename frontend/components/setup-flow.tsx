@@ -145,7 +145,7 @@ export default function Component() {
             <div className="space-y-6">
               {entries.map((entry, index) => (
                 <AddressInput
-                  key={index}
+                  key={`address-input-${index}-${entries.length}`}
                   value={entry.input}
                   onChange={(value, resolvedAddress) =>
                     updateEntry(index, value, resolvedAddress)
