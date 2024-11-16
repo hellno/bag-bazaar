@@ -9,7 +9,7 @@ type TProductViewPageProps = {
 export default async function ProductViewPage({
   productId
 }: TProductViewPageProps) {
-  let product = null;
+  let product: Product | null = null;
   let pageTitle = 'Create New Product';
 
   if (productId !== 'new') {
