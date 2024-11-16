@@ -302,15 +302,16 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
           : HashLock.forMultipleFills(
               secretHashes.map((secretHash, i) => {
                 const encodedValue = keccak256(
-                  encodePacked(['uint64', 'bytes32'], [BigInt(i), secretHash])
+                  encodePacked(
+                    ['uint64', 'bytes32'],
+                    [BigInt(i), secretHash]
+                  ) as `0x${string}`
                 );
-
+              
                 return {
                   _tag: 'MerkleLeaf' as const,
                   value: encodedValue
-                } as string & {
-                  _tag: 'MerkleLeaf';
-                };
+                } satisfies MerkleLeaf;
               })
             );
 
