@@ -25,14 +25,22 @@ import { encodePacked, keccak256 } from 'viem';
 function getRandomBytes32(): string {
   const array = new Uint8Array(32);
   crypto.getRandomValues(array);
-  return '0x' + Array.from(array).map(b => b.toString(16).padStart(2, '0')).join('');
+  return (
+    '0x' +
+    Array.from(array)
+      .map((b) => b.toString(16).padStart(2, '0'))
+      .join('')
+  );
 }
 
 // Type definitions for supported tokens and networks
-type SupportedToken = keyof (typeof SUPPORTED_NETWORKS)[NetworkEnum.ARBITRUM]['tokens'];
+type SupportedToken =
+  keyof (typeof SUPPORTED_NETWORKS)[NetworkEnum.ARBITRUM]['tokens'];
 
 // Type guards for validation
-function isValidNetwork(chain: number): chain is keyof typeof SUPPORTED_NETWORKS {
+function isValidNetwork(
+  chain: number
+): chain is keyof typeof SUPPORTED_NETWORKS {
   return chain in SUPPORTED_NETWORKS;
 }
 
@@ -44,7 +52,8 @@ function isValidToken(
 }
 
 const SUPPORTED_NETWORKS = {
-  [NetworkEnum.ARBITRUM]: {  // 42161
+  [NetworkEnum.ARBITRUM]: {
+    // 42161
     name: 'Arbitrum',
     tokens: {
       USDC: {
@@ -59,7 +68,8 @@ const SUPPORTED_NETWORKS = {
       }
     }
   },
-  [NetworkEnum.COINBASE]: {  // 8453
+  [NetworkEnum.COINBASE]: {
+    // 8453
     name: 'Base',
     tokens: {
       ETH: {
@@ -79,7 +89,8 @@ const SUPPORTED_NETWORKS = {
       }
     }
   },
-  [NetworkEnum.ETHEREUM]: {  // 1
+  [NetworkEnum.ETHEREUM]: {
+    // 1
     name: 'Ethereum',
     tokens: {
       WETH: {
@@ -89,7 +100,8 @@ const SUPPORTED_NETWORKS = {
       }
     }
   },
-  [NetworkEnum.OPTIMISM]: {  // 10
+  [NetworkEnum.OPTIMISM]: {
+    // 10
     name: 'OP Mainnet',
     tokens: {
       WETH: {
@@ -99,7 +111,8 @@ const SUPPORTED_NETWORKS = {
       }
     }
   },
-  [NetworkEnum.GNOSIS]: {  // 100
+  [NetworkEnum.GNOSIS]: {
+    // 100
     name: 'Gnosis',
     tokens: {
       WETH: {
@@ -123,31 +136,30 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
   const [sourceChain, setSourceChain] = useState<NetworkEnum>(
     NetworkEnum.ARBITRUM
   );
-  const [selectedToken, setSelectedToken] = useState<SupportedToken>('ETH');
+  const [selectedToken, setSelectedToken] = useState<SupportedToken>('WETH');
 
   const { data: walletClient } = useWalletClient();
   const { data: tokenBalance } = useBalance({
     address: walletClient?.account.address,
-    token: 
-      selectedToken === 'ETH'
-        ? undefined
-        : (isValidNetwork(sourceChain) && isValidToken(sourceChain, selectedToken)
-            ? SUPPORTED_NETWORKS[sourceChain].tokens[selectedToken].address as `0x${string}`
-            : undefined),
-    chainId: sourceChain,
-    watch: true
+    token:
+      isValidNetwork(sourceChain) && isValidToken(sourceChain, selectedToken)
+        ? (SUPPORTED_NETWORKS[sourceChain].tokens[selectedToken]
+            .address as `0x${string}`)
+        : undefined,
+    chainId: sourceChain
+    // watch: true
   });
 
   // Get the safe's current balance
   const { data: safeBalance } = useBalance({
-    address: safeAddress as `0x${string}`,
-    watch: true
+    address: safeAddress as `0x${string}`
+    // watch: true
   });
 
   // Get the user's wallet balance
   const { data: walletBalance } = useBalance({
-    address: walletClient?.account.address,
-    watch: true
+    address: walletClient?.account.address
+    // watch: true
   });
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
