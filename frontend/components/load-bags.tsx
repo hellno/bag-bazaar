@@ -11,6 +11,19 @@ import { parseEther, formatEther, createPublicClient, http } from 'viem';
 import { baseSepolia } from 'viem/chains';
 import { useBalance, useWalletClient } from 'wagmi';
 
+enum NetworkEnum {
+  ETHEREUM = 1,
+  POLYGON = 137,
+  ZKSYNC = 324,
+  BINANCE = 56,
+  ARBITRUM = 42161,
+  AVALANCHE = 43114,
+  OPTIMISM = 10,
+  FANTOM = 250,
+  GNOSIS = 100,
+  COINBASE = 8453
+}
+
 const publicClient = createPublicClient({
   chain: baseSepolia,
   transport: http('https://sepolia.base.org')
@@ -22,8 +35,6 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select';
-import { buildSwapTransaction } from '@coinbase/onchainkit/api';
-import type { Token } from '@coinbase/onchainkit/token';
 import { encodePacked, keccak256 } from 'viem';
 
 // Helper function for random bytes generation using Web Crypto API
@@ -40,7 +51,7 @@ function getRandomBytes32(): string {
 
 // Type definitions
 type SupportedToken =
-  keyof (typeof SUPPORTED_NETWORKS)[NetworkEnum.ARBITRUM]['tokens'];
+  keyof (typeof SUPPORTED_NETWORKS)[NetworkEnum.COINBASE]['tokens'];
 
 // Type guards for validation
 function isValidNetwork(
@@ -57,23 +68,33 @@ function isValidToken(
 }
 
 const SUPPORTED_NETWORKS = {
-  [NetworkEnum.BASE]: {
+  [NetworkEnum.COINBASE]: {
     name: 'Base',
     tokens: {
-      ETH: {
-        name: 'Ethereum',
-        address: '',
-        symbol: 'ETH',
+      WETH: {
+        name: 'Wrapped ETH',
+        address: '0x4200000000000000000000000000000000000006',
+        symbol: 'WETH',
         decimals: 18,
-        image: 'https://wallet-api-production.s3.amazonaws.com/uploads/tokens/eth_288.png',
+        image:
+          'https://wallet-api-production.s3.amazonaws.com/uploads/tokens/eth_288.png',
         chainId: 8453
       },
       USDC: {
         name: 'USD Coin',
-        address: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+        address: '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913',
         symbol: 'USDC',
         decimals: 6,
-        image: 'https://d3r81g40ycuhqg.cloudfront.net/wallet/wais/44/2b/442b80bd16af0c0d9b22e03a16753823fe826e5bfd457292b55fa0ba8c1ba213',
+        image:
+          'https://d3r81g40ycuhqg.cloudfront.net/wallet/wais/44/2b/442b80bd16af0c0d9b22e03a16753823fe826e5bfd457292b55fa0ba8c1ba213',
+        chainId: 8453
+      },
+      DEGEN: {
+        name: 'DEGEN',
+        address: '0x4ed4e862860bed51a9570b96d89af5e1b0efefed',
+        symbol: 'DEGEN',
+        decimals: 18,
+        image: 'https://basescan.org/token/images/degentips_32.png',
         chainId: 8453
       }
     }
@@ -90,7 +111,7 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sourceChain, setSourceChain] = useState<NetworkEnum>(
-    NetworkEnum.ARBITRUM
+    NetworkEnum.COINBASE
   );
   const [selectedToken, setSelectedToken] = useState<SupportedToken>('WETH');
 
@@ -103,19 +124,16 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
             .address as `0x${string}`)
         : undefined,
     chainId: sourceChain
-    // watch: true
   });
 
   // Get the safe's current balance
   const { data: safeBalance } = useBalance({
     address: safeAddress as `0x${string}`
-    // watch: true
   });
 
   // Get the user's wallet balance
   const { data: walletBalance } = useBalance({
     address: walletClient?.account.address
-    // watch: true
   });
 
   const handleSwap = async () => {
@@ -129,8 +147,9 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
 
     try {
       // Get token configurations
-      const fromTokenConfig = SUPPORTED_NETWORKS[sourceChain].tokens[selectedToken];
-      
+      const fromTokenConfig =
+        SUPPORTED_NETWORKS[sourceChain].tokens[selectedToken];
+
       // Create token objects for OnchainKit
       const fromToken: Token = {
         name: fromTokenConfig.name,
@@ -142,12 +161,13 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
       };
 
       const toToken: Token = {
-        name: 'Ethereum',
-        address: '',
-        symbol: 'ETH',
+        name: 'Wrapped ETH',
+        address: '0x4200000000000000000000000000000000000006',
+        symbol: 'WETH',
         decimals: 18,
-        image: 'https://wallet-api-production.s3.amazonaws.com/uploads/tokens/eth_288.png',
-        chainId: baseSepolia.id
+        image:
+          'https://wallet-api-production.s3.amazonaws.com/uploads/tokens/weth_288.png',
+        chainId: 8453
       };
 
       // Build swap transaction
@@ -156,24 +176,23 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
         from: fromToken,
         to: toToken,
         amount: amount,
-        useAggregator: false
+        useAggregator: true
       });
 
       // Execute the transaction
       const hash = await walletClient.sendTransaction({
         to: swapTx.to as `0x${string}`,
-        data: swapTx.data as `0x${string}`,
+        // data: swapTx.data as `0x${string}`,
         value: BigInt(swapTx.value || 0)
       });
 
       console.log('Swap transaction submitted:', hash);
-      
+
       // Wait for transaction confirmation
       await publicClient.waitForTransactionReceipt({ hash });
-      
+
       // Call success callback if provided
       onSuccess?.();
-
     } catch (err) {
       console.error('Swap error:', err);
       setError(err instanceof Error ? err.message : 'Failed to process swap');
@@ -204,7 +223,7 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
         </div>
       </div>
 
-      <Select
+      {/* <Select
         value={sourceChain.toString()}
         onValueChange={(value) => {
           setSourceChain(Number(value) as NetworkEnum);
@@ -221,7 +240,7 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
             </SelectItem>
           ))}
         </SelectContent>
-      </Select>
+      </Select> */}
       <Select
         value={selectedToken}
         onValueChange={(value: string) =>
