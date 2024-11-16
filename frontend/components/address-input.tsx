@@ -77,50 +77,69 @@ export function AddressInput({
   const isLoading = isLoadingName || isLoadingAddress || isResolvingEmail;
 
   useEffect(() => {
-    validateAndResolveEntry();
-  }, [input, resolvedName, resolvedAddress]);
+    let isMounted = true; // For cleanup
 
-  const validateAndResolveEntry = () => {
-    // Don't resolve empty inputs
-    if (!input.trim()) {
-      setResolvedData({ isValid: false });
-      onChange(input, false);
-      return;
-    }
+    const validateAndResolveEntry = async () => {
+      // Don't resolve empty inputs
+      if (!input.trim()) {
+        if (isMounted) {
+          setResolvedData({ isValid: false });
+          onChange(input, false);
+        }
+        return;
+      }
 
-    const isEthAddress = /^0x[a-fA-F0-9]{40}$/.test(input);
-    const isEns = input.toLowerCase().endsWith('.eth');
-    const isEmail = EMAIL_REGEX.test(input);
+      const isEthAddress = /^0x[a-fA-F0-9]{40}$/.test(input);
+      const isEns = input.toLowerCase().endsWith('.eth');
+      const isEmail = EMAIL_REGEX.test(input);
 
-    let newResolvedData: ResolvedData = {
-      isValid: false
+      let newResolvedData: ResolvedData = {
+        isValid: false
+      };
+
+      try {
+        if (isEthAddress) {
+          newResolvedData = {
+            resolvedAddress: input,
+            resolvedName,
+            isValid: true
+          };
+        } else if (isEns && resolvedAddress) {
+          newResolvedData = {
+            resolvedAddress,
+            resolvedName: input,
+            isValid: true
+          };
+        } else if (isEmail) {
+          const emailWalletAddress = await resolveEmailToAddress(input);
+          if (emailWalletAddress) {
+            newResolvedData = {
+              resolvedAddress: emailWalletAddress,
+              resolvedName: input, // Use email as the display name
+              isValid: true
+            };
+          }
+        }
+
+        if (isMounted) {
+          setResolvedData(newResolvedData);
+          onChange(input, newResolvedData.isValid, newResolvedData.resolvedAddress);
+        }
+      } catch (error) {
+        console.error('Error in validation:', error);
+        if (isMounted) {
+          setResolvedData({ isValid: false });
+          onChange(input, false);
+        }
+      }
     };
 
-    if (isEthAddress) {
-      newResolvedData = {
-        resolvedAddress: input,
-        resolvedName,
-        isValid: true
-      };
-    } else if (isEns && resolvedAddress) {
-      newResolvedData = {
-        resolvedAddress,
-        resolvedName: input,
-        isValid: true
-      };
-    } else if (isEmail) {
-      const emailWalletAddress = await resolveEmailToAddress(input);
-      if (emailWalletAddress) {
-        newResolvedData = {
-          resolvedAddress: emailWalletAddress,
-          resolvedName: input, // Use email as the display name
-          isValid: true
-        };
-      }
-    }
+    validateAndResolveEntry();
 
-    setResolvedData(newResolvedData);
-    onChange(input, newResolvedData.isValid, newResolvedData.resolvedAddress);
+    // Cleanup function
+    return () => {
+      isMounted = false;
+    };
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
