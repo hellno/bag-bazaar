@@ -35,6 +35,37 @@ export function AddressInput({
     isValid: false
   });
 
+  const [isResolvingEmail, setIsResolvingEmail] = useState(false);
+
+  // Function to resolve email to wallet address
+  const resolveEmailToAddress = async (email: string) => {
+    try {
+      setIsResolvingEmail(true);
+      const response = await fetch('/api/embedded-wallet', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email,
+          environmentId: process.env.NEXT_PUBLIC_DYNAMIC_ENV_ID
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to resolve email to wallet address');
+      }
+
+      const data = await response.json();
+      return data.walletAddress;
+    } catch (error) {
+      console.error('Error resolving email:', error);
+      return null;
+    } finally {
+      setIsResolvingEmail(false);
+    }
+  };
+
   // Use hooks for ENS resolution
   const { data: resolvedName, isLoading: isLoadingName } = useName({
     address: input as `0x${string}`
