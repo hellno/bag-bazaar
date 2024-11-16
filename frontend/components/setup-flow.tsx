@@ -42,6 +42,21 @@ export default function Component() {
       isDeploying: false
     });
 
+  // Create arrays of resolved names and addresses using hooks
+  const resolvedNames = entries.map(entry => 
+    useName({ address: entry.input }));
+  const resolvedAddresses = entries.map(entry => 
+    useAddress({ name: entry.input }));
+
+  // Update entries when resolved data changes
+  useEffect(() => {
+    entries.forEach((entry, index) => {
+      if (entry.input) {
+        validateAndResolveEntry(entry.input, index);
+      }
+    });
+  }, [resolvedNames, resolvedAddresses]);
+
   const validateAndResolveEntry = async (input: string, index: number) => {
     const newEntries = [...entries];
     const entry = newEntries[index];
@@ -59,12 +74,12 @@ export default function Component() {
 
     try {
       if (isEthAddress) {
-        const { data: name, isLoading } = await useName({ address: input });
+        const name = resolvedNames[index].data;
         entry.resolvedName = name;
         entry.resolvedAddress = input;
         entry.isValid = true;
       } else if (isEns) {
-        const { data: address, isLoading } = useAddress({ name: input });
+        const address = resolvedAddresses[index].data;
         if (address) {
           entry.resolvedAddress = address;
           entry.resolvedName = input;
