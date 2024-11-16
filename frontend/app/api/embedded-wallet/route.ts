@@ -1,20 +1,9 @@
 import { NextResponse } from 'next/server';
 
 const DYNAMIC_API_URL = 'https://app.dynamicauth.com/api/v0';
-const limiter = rateLimit({
-  interval: 60 * 1000, // 1 minute
-  uniqueTokenPerInterval: 500
-});
 
 export async function POST(request: Request) {
   try {
-    // Rate limiting
-    try {
-      await limiter.check(request, 10); // 10 requests per minute
-    } catch {
-      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
-    }
-
     const { email, environmentId } = await request.json();
 
     if (!email || !environmentId) {
@@ -26,7 +15,7 @@ export async function POST(request: Request) {
 
     if (!isValidEmail(email)) {
       return NextResponse.json(
-        { error: 'Email and environmentId are required' },
+        { error: 'Invalid email format' },
         { status: 400 }
       );
     }
