@@ -1,7 +1,8 @@
 'use client';
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { getSwapQuote } from '@coinbase/onchainkit/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Loader2, Wallet, Send, ArrowRight } from 'lucide-react';
@@ -63,16 +64,27 @@ interface LoadBagsProps {
 }
 
 export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
-  const WETH_ADDRESS = '0x4200000000000000000000000000000000000006';
-  const [selectedToken] = useState<Token>({
+  const WETH_TOKEN = {
     name: 'Wrapped ETH',
-    address: WETH_ADDRESS,
+    address: '0x4200000000000000000000000000000000000006',
     symbol: 'WETH',
     decimals: 18,
     chainId: base.id,
-    image:
-      'https://wallet-api-production.s3.amazonaws.com/uploads/tokens/weth_288.png'
-  });
+    image: 'https://wallet-api-production.s3.amazonaws.com/uploads/tokens/weth_288.png'
+  };
+
+  const USDC_TOKEN = {
+    name: 'USDC',
+    address: '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913',
+    symbol: 'USDC',
+    decimals: 6,
+    image: 'https://d3r81g40ycuhqg.cloudfront.net/wallet/wais/44/2b/442b80bd16af0c0d9b22e03a16753823fe826e5bfd457292b55fa0ba8c1ba213-ZWUzYjJmZGUtMDYxNy00NDcyLTg0NjQtMWI4OGEwYjBiODE2',
+    chainId: base.id,
+  };
+
+  const WETH_ADDRESS = WETH_TOKEN.address;
+  const [selectedToken] = useState<Token>(WETH_TOKEN);
+  const [usdBalance, setUsdBalance] = useState<string>('0.00');
 
   const [amount, setAmount] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
@@ -90,6 +102,31 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
     token: WETH_ADDRESS as `0x${string}`,
     chainId: base.id
   });
+
+  const getUSDValue = async (wethBalance: bigint) => {
+    try {
+      const wethAmount = formatEther(wethBalance);
+      const quote = await getSwapQuote({
+        from: WETH_TOKEN,
+        to: USDC_TOKEN,
+        amount: wethAmount,
+        useAggregator: false,
+      });
+      
+      // USDC has 6 decimals, so we format accordingly
+      const usdValue = (Number(quote.toAmount) / 1e6).toFixed(2);
+      setUsdBalance(usdValue);
+    } catch (error) {
+      console.error('Error getting USD value:', error);
+      setUsdBalance('0.00');
+    }
+  };
+
+  useEffect(() => {
+    if (safeBalance?.value) {
+      getUSDValue(safeBalance.value);
+    }
+  }, [safeBalance?.value]);
 
   // Get the user's wallet balance
   const { data: walletBalance } = useBalance({
@@ -193,8 +230,10 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
   return (
     <div className="space-y-4 rounded-lg bg-gray-50 p-6">
       <div className="mt-4 text-2xl text-gray-900">
-        Shared balance{' '}
-        {safeBalance ? `${formatEther(safeBalance.value)} WETH` : '0 WETH'}
+        Shared balance: ${usdBalance}
+        <div className="text-sm text-gray-500">
+          ({safeBalance ? `${formatEther(safeBalance.value)} WETH` : '0 WETH'})
+        </div>
       </div>
       <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-2 text-sm text-gray-500">
