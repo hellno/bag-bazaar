@@ -115,13 +115,23 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
         const tokens = await getTokens({
           limit: '20'
         });
-        setAvailableTokens(tokens);
-        if (tokens.length > 0) {
-          setSelectedToken(tokens[0]);
+        
+        // Check if tokens is an array (Token[]) and not an APIError
+        if (Array.isArray(tokens)) {
+          setAvailableTokens(tokens);
+          if (tokens.length > 0) {
+            setSelectedToken(tokens[0]);
+          }
+        } else {
+          // Handle API Error
+          console.error('Failed to fetch tokens:', tokens);
+          setError('Failed to load available tokens');
+          setAvailableTokens([]); // Set empty array as fallback
         }
       } catch (err) {
         console.error('Failed to fetch tokens:', err);
         setError('Failed to load available tokens');
+        setAvailableTokens([]); // Set empty array as fallback
       } finally {
         setIsLoadingTokens(false);
       }
