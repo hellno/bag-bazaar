@@ -5,24 +5,11 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Loader2, ArrowRight, Wallet } from 'lucide-react';
-import { buildSwapTransaction } from '@coinbase/onchainkit/api';
+import { buildSwapTransaction, getTokens } from '@coinbase/onchainkit/api';
 import type { Token } from '@coinbase/onchainkit/token';
-import { parseEther, formatEther, createPublicClient, http } from 'viem';
+import { parseEther, formatEther, createPublicClient, http, formatUnits } from 'viem';
 import { baseSepolia } from 'viem/chains';
 import { useBalance, useWalletClient } from 'wagmi';
-
-enum NetworkEnum {
-  ETHEREUM = 1,
-  POLYGON = 137,
-  ZKSYNC = 324,
-  BINANCE = 56,
-  ARBITRUM = 42161,
-  AVALANCHE = 43114,
-  OPTIMISM = 10,
-  FANTOM = 250,
-  GNOSIS = 100,
-  COINBASE = 8453
-}
 
 const publicClient = createPublicClient({
   chain: baseSepolia,
@@ -49,57 +36,6 @@ function getRandomBytes32(): string {
   );
 }
 
-// Type definitions
-type SupportedToken =
-  keyof (typeof SUPPORTED_NETWORKS)[NetworkEnum.COINBASE]['tokens'];
-
-// Type guards for validation
-function isValidNetwork(
-  chain: number
-): chain is keyof typeof SUPPORTED_NETWORKS {
-  return chain in SUPPORTED_NETWORKS;
-}
-
-function isValidToken(
-  network: keyof typeof SUPPORTED_NETWORKS,
-  token: string
-): token is keyof (typeof SUPPORTED_NETWORKS)[typeof network]['tokens'] {
-  return token in SUPPORTED_NETWORKS[network].tokens;
-}
-
-const SUPPORTED_NETWORKS = {
-  [NetworkEnum.COINBASE]: {
-    name: 'Base',
-    tokens: {
-      WETH: {
-        name: 'Wrapped ETH',
-        address: '0x4200000000000000000000000000000000000006',
-        symbol: 'WETH',
-        decimals: 18,
-        image:
-          'https://wallet-api-production.s3.amazonaws.com/uploads/tokens/eth_288.png',
-        chainId: 8453
-      },
-      USDC: {
-        name: 'USD Coin',
-        address: '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913',
-        symbol: 'USDC',
-        decimals: 6,
-        image:
-          'https://d3r81g40ycuhqg.cloudfront.net/wallet/wais/44/2b/442b80bd16af0c0d9b22e03a16753823fe826e5bfd457292b55fa0ba8c1ba213',
-        chainId: 8453
-      },
-      DEGEN: {
-        name: 'DEGEN',
-        address: '0x4ed4e862860bed51a9570b96d89af5e1b0efefed',
-        symbol: 'DEGEN',
-        decimals: 18,
-        image: 'https://basescan.org/token/images/degentips_32.png',
-        chainId: 8453
-      }
-    }
-  }
-} as const;
 
 interface LoadBagsProps {
   safeAddress: string;
@@ -110,20 +46,39 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
   const [amount, setAmount] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [sourceChain, setSourceChain] = useState<NetworkEnum>(
-    NetworkEnum.COINBASE
-  );
-  const [selectedToken, setSelectedToken] = useState<SupportedToken>('WETH');
+  const [selectedToken, setSelectedToken] = useState<Token | null>(null);
+  const [availableTokens, setAvailableTokens] = useState<Token[]>([]);
+  const [isLoadingTokens, setIsLoadingTokens] = useState(true);
+
+  // Fetch available tokens on component mount
+  useEffect(() => {
+    const fetchTokens = async () => {
+      try {
+        setIsLoadingTokens(true);
+        const tokens = await getTokens({ 
+          limit: '20',
+          chainId: baseSepolia.id.toString()
+        });
+        setAvailableTokens(tokens);
+        if (tokens.length > 0) {
+          setSelectedToken(tokens[0]);
+        }
+      } catch (err) {
+        console.error('Failed to fetch tokens:', err);
+        setError('Failed to load available tokens');
+      } finally {
+        setIsLoadingTokens(false);
+      }
+    };
+
+    fetchTokens();
+  }, []);
 
   const { data: walletClient } = useWalletClient();
   const { data: tokenBalance } = useBalance({
     address: walletClient?.account.address,
-    token:
-      isValidNetwork(sourceChain) && isValidToken(sourceChain, selectedToken)
-        ? (SUPPORTED_NETWORKS[sourceChain].tokens[selectedToken]
-            .address as `0x${string}`)
-        : undefined,
-    chainId: sourceChain
+    token: selectedToken?.address as `0x${string}`,
+    chainId: baseSepolia.id
   });
 
   // Get the safe's current balance
@@ -146,19 +101,9 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
     setError(null);
 
     try {
-      // Get token configurations
-      const fromTokenConfig =
-        SUPPORTED_NETWORKS[sourceChain].tokens[selectedToken];
-
-      // Create token objects for OnchainKit
-      const fromToken: Token = {
-        name: fromTokenConfig.name,
-        address: fromTokenConfig.address,
-        symbol: fromTokenConfig.symbol,
-        decimals: fromTokenConfig.decimals,
-        image: fromTokenConfig.image,
-        chainId: fromTokenConfig.chainId
-      };
+      if (!selectedToken) {
+        throw new Error('No token selected');
+      }
 
       const toToken: Token = {
         name: 'Wrapped ETH',
@@ -223,45 +168,58 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
         </div>
       </div>
 
-      {/* <Select
-        value={sourceChain.toString()}
-        onValueChange={(value) => {
-          setSourceChain(Number(value) as NetworkEnum);
-          setSelectedToken('WETH');
-        }}
-      >
-        <SelectTrigger>
-          <SelectValue placeholder="Select source chain" />
-        </SelectTrigger>
-        <SelectContent>
-          {Object.entries(SUPPORTED_NETWORKS).map(([chainId, network]) => (
-            <SelectItem key={chainId} value={chainId}>
-              {network.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select> */}
       <Select
-        value={selectedToken}
-        onValueChange={(value: string) =>
-          setSelectedToken(value as SupportedToken)
-        }
+        value={selectedToken?.address ?? ''}
+        onValueChange={(value) => {
+          const token = availableTokens.find(t => t.address === value);
+          setSelectedToken(token ?? null);
+        }}
+        disabled={isLoadingTokens}
       >
         <SelectTrigger>
-          <SelectValue placeholder="Select token" />
+          <SelectValue placeholder="Select token">
+            {selectedToken ? (
+              <div className="flex items-center gap-2">
+                {selectedToken.image && (
+                  <img 
+                    src={selectedToken.image} 
+                    alt={selectedToken.symbol} 
+                    className="h-5 w-5 rounded-full"
+                  />
+                )}
+                <span>{selectedToken.symbol}</span>
+              </div>
+            ) : (
+              'Select token'
+            )}
+          </SelectValue>
         </SelectTrigger>
         <SelectContent>
-          {Object.entries(SUPPORTED_NETWORKS[sourceChain].tokens).map(
-            ([symbol, token]) => (
-              <SelectItem key={symbol} value={symbol}>
+          {isLoadingTokens ? (
+            <SelectItem value="loading" disabled>
+              <div className="flex items-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Loading tokens...
+              </div>
+            </SelectItem>
+          ) : (
+            availableTokens.map((token) => (
+              <SelectItem key={token.address} value={token.address}>
                 <div className="flex items-center gap-2">
-                  <span>{(token as { symbol: string }).symbol}</span>
+                  {token.image && (
+                    <img 
+                      src={token.image} 
+                      alt={token.symbol} 
+                      className="h-5 w-5 rounded-full"
+                    />
+                  )}
+                  <span>{token.symbol}</span>
                   <span className="text-sm text-gray-500">
-                    ({(token as { name: string }).name})
+                    ({token.name})
                   </span>
                 </div>
               </SelectItem>
-            )
+            ))
           )}
         </SelectContent>
       </Select>
