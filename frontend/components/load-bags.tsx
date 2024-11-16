@@ -1,11 +1,33 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Loader2, ArrowRight, Wallet } from 'lucide-react';
 import { parseEther, formatEther } from 'viem';
-import { useBalance, useWalletClient } from 'wagmi';
+import { useBalance, useWalletClient, useNetwork, useSwitchNetwork } from 'wagmi';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { SDK, HashLock, PrivateKeyProviderConnector, NetworkEnum } from '@1inch/cross-chain-sdk';
+import { Web3 } from 'web3';
+import { solidityPackedKeccak256, randomBytes } from 'ethers';
+
+// Helper function for random bytes generation
+function getRandomBytes32() {
+  return '0x' + Buffer.from(randomBytes(32)).toString('hex');
+}
+
+const SUPPORTED_NETWORKS = {
+  [NetworkEnum.ARBITRUM]: {
+    name: 'Arbitrum',
+    nativeToken: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+    usdcAddress: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831'
+  },
+  [NetworkEnum.BASE]: {
+    name: 'Base',
+    nativeToken: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+    usdcAddress: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'
+  }
+};
 
 interface LoadBagsProps {
   safeAddress: string;
@@ -16,8 +38,11 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
   const [amount, setAmount] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
+  const [sourceChain, setSourceChain] = useState<NetworkEnum>(NetworkEnum.ARBITRUM);
+  
   const { data: walletClient } = useWalletClient();
+  const { chain } = useNetwork();
+  const { switchNetwork } = useSwitchNetwork();
   
   // Get the safe's current balance
   const { data: safeBalance } = useBalance({
@@ -60,34 +85,85 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
     return true;
   };
 
-  const handleSend = async () => {
+  const handleCrossChainTransfer = async () => {
     if (!validateAmount() || !walletClient) return;
 
     setIsLoading(true);
     setError(null);
 
     try {
-      const tx = await walletClient.sendTransaction({
-        to: safeAddress as `0x${string}`,
-        value: parseEther(amount),
+      // Initialize 1inch SDK
+      const web3Instance = new Web3(process.env.NEXT_PUBLIC_RPC_URL_ETHEREUM!);
+      const blockchainProvider = new PrivateKeyProviderConnector(
+        process.env.NEXT_PUBLIC_WALLET_KEY!,
+        web3Instance
+      );
+
+      const sdk = new SDK({
+        url: 'https://api.1inch.dev/fusion-plus',
+        authKey: process.env.NEXT_PUBLIC_DEV_PORTAL_KEY!,
+        blockchainProvider
       });
 
-      console.log('Transaction sent:', tx);
+      // Setup cross-chain transfer parameters
+      const params = {
+        srcChainId: sourceChain,
+        dstChainId: NetworkEnum.BASE,
+        srcTokenAddress: SUPPORTED_NETWORKS[sourceChain].usdcAddress,
+        dstTokenAddress: SUPPORTED_NETWORKS[NetworkEnum.BASE].usdcAddress,
+        amount: parseEther(amount).toString(),
+        enableEstimate: true,
+        walletAddress: walletClient.account.address
+      };
+
+      // Get quote
+      const quote = await sdk.getQuote(params);
+      const secretsCount = quote.getPreset().secretsCount;
       
-      // Wait for transaction to be mined
-      const receipt = await walletClient.waitForTransactionReceipt({ 
-        hash: tx 
+      // Generate secrets and hashes
+      const secrets = Array.from({ length: secretsCount }).map(() => getRandomBytes32());
+      const secretHashes = secrets.map(x => HashLock.hashSecret(x));
+
+      // Create hash lock
+      const hashLock = secretsCount === 1
+        ? HashLock.forSingleFill(secrets[0])
+        : HashLock.forMultipleFills(
+            secretHashes.map((secretHash, i) =>
+              solidityPackedKeccak256(['uint64', 'bytes32'], [i, secretHash.toString()])
+            )
+          );
+
+      // Place order
+      const quoteResponse = await sdk.placeOrder(quote, {
+        walletAddress: walletClient.account.address,
+        hashLock,
+        secretHashes
       });
-      
-      console.log('Transaction confirmed:', receipt);
-      
-      // Clear input and call success callback
-      setAmount('');
-      onSuccess?.();
+
+      // Monitor order status
+      const intervalId = setInterval(async () => {
+        try {
+          const orderStatus = await sdk.getOrderStatus(quoteResponse.orderHash);
+          if (orderStatus.status === 'executed') {
+            clearInterval(intervalId);
+            setIsLoading(false);
+            onSuccess?.();
+          }
+
+          const fillsObject = await sdk.getReadyToAcceptSecretFills(quoteResponse.orderHash);
+          if (fillsObject.fills.length > 0) {
+            for (const fill of fillsObject.fills) {
+              await sdk.submitSecret(quoteResponse.orderHash, secrets[fill.idx]);
+            }
+          }
+        } catch (err) {
+          console.error('Error monitoring order:', err);
+        }
+      }, 5000);
+
     } catch (err) {
-      console.error('Error sending transaction:', err);
-      setError(err instanceof Error ? err.message : 'Failed to send ETH');
-    } finally {
+      console.error('Error in cross-chain transfer:', err);
+      setError(err instanceof Error ? err.message : 'Failed to process cross-chain transfer');
       setIsLoading(false);
     }
   };
@@ -102,6 +178,22 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
         </div>
       </div>
 
+      <Select
+        value={sourceChain.toString()}
+        onValueChange={(value) => setSourceChain(Number(value) as NetworkEnum)}
+      >
+        <SelectTrigger>
+          <SelectValue placeholder="Select source chain" />
+        </SelectTrigger>
+        <SelectContent>
+          {Object.entries(SUPPORTED_NETWORKS).map(([chainId, network]) => (
+            <SelectItem key={chainId} value={chainId}>
+              {network.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
       <div className="space-y-2">
         <div className="flex gap-4">
           <Input
@@ -113,7 +205,7 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
             disabled={isLoading}
           />
           <Button
-            onClick={handleSend}
+            onClick={handleCrossChainTransfer}
             disabled={isLoading || !amount}
             className="min-w-[120px]"
           >
