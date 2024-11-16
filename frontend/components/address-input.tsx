@@ -111,7 +111,7 @@ export function AddressInput({
     return () => {
       isMounted = false;
     };
-  });
+  }, [input, resolvedName, resolvedAddress, onChange]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
