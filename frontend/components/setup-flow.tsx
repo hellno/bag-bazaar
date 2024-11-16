@@ -23,14 +23,16 @@ import { createSmartAccountClient } from 'permissionless';
 
 const publicClient = createPublicClient({
   chain: baseSepolia,
-  transport: http("https://sepolia.base.org")
+  transport: http('https://sepolia.base.org')
 });
 
 const paymasterClient = createPimlicoClient({
-  transport: http(`https://api.pimlico.io/v2/base-sepolia/rpc?apikey=${process.env.NEXT_PUBLIC_PIMLICO_API_KEY}`),
+  transport: http(
+    `https://api.pimlico.io/v2/base-sepolia/rpc?apikey=${process.env.NEXT_PUBLIC_PIMLICO_API_KEY}`
+  ),
   entryPoint: {
     address: entryPoint07Address,
-    version: "0.7"
+    version: '0.7'
   }
 });
 
@@ -92,12 +94,14 @@ export default function Component() {
       const ownerAddresses = validEntries
         .filter((entry) => entry.resolvedAddress)
         .map((entry) => entry.resolvedAddress as string);
-      
+
       console.log('Filtered owner addresses:', ownerAddresses);
 
       // Create signer from private key
       console.log('Creating signer from private key...');
-      const owner = privateKeyToAccount(process.env.NEXT_PUBLIC_SIGNER_PRIVATE_KEY as `0x${string}`);
+      const owner = privateKeyToAccount(
+        process.env.NEXT_PUBLIC_SIGNER_PRIVATE_KEY as `0x${string}`
+      );
       console.log('Signer created');
 
       // Create Safe Account
@@ -106,12 +110,12 @@ export default function Component() {
         client: publicClient,
         entryPoint: {
           address: entryPoint07Address,
-          version: "0.7",
+          version: '0.7'
         },
-        owners: [owner, ...ownerAddresses.map(addr => ({ address: addr }))],
+        owners: [owner, ...ownerAddresses.map((addr) => ({ address: addr }))],
         threshold: Math.ceil((ownerAddresses.length + 1) / 2), // Including the deployer
         saltNonce: BigInt(Date.now()), // Use timestamp as nonce for uniqueness
-        version: "1.4.1"
+        version: '1.4.1'
       });
       console.log('Safe account created with config:', safeAccount);
 
@@ -120,11 +124,14 @@ export default function Component() {
       const smartAccountClient = createSmartAccountClient({
         account: safeAccount,
         chain: baseSepolia,
-        paymaster: paymasterClient, 
-        bundlerTransport: http(`https://api.pimlico.io/v2/base-sepolia/rpc?apikey=${process.env.NEXT_PUBLIC_PIMLICO_API_KEY}`),
+        paymaster: paymasterClient,
+        bundlerTransport: http(
+          `https://api.pimlico.io/v2/base-sepolia/rpc?apikey=${process.env.NEXT_PUBLIC_PIMLICO_API_KEY}`
+        ),
         userOperation: {
-          estimateFeesPerGas: async () => (await paymasterClient.getUserOperationGasPrice()).fast,
-        },
+          estimateFeesPerGas: async () =>
+            (await paymasterClient.getUserOperationGasPrice()).fast
+        }
       });
       console.log('Smart account client created');
 
@@ -132,7 +139,7 @@ export default function Component() {
       console.log('Deploying Safe...');
       const initTx = await smartAccountClient.sendTransaction({
         to: await safeAccount.getAddress(),
-        data: "0x",
+        data: '0x',
         value: 0n
       });
       console.log('Safe deployed with transaction:', initTx);
@@ -275,12 +282,6 @@ export default function Component() {
             <p className="text-xl text-gray-600">
               Your invitations have been sent successfully!
             </p>
-            <Button
-              onClick={() => setCurrentStep('usernames')}
-              className="p-6 text-xl"
-            >
-              Invite More Friends
-            </Button>
           </div>
         );
     }
