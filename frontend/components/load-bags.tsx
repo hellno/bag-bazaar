@@ -29,26 +29,43 @@ function getRandomBytes32() {
 const SUPPORTED_NETWORKS = {
   [NetworkEnum.ARBITRUM]: {
     name: 'Arbitrum',
-    usdcAddress: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831',
-    wethAddress: '0x82af49447d8a07e3bd95bd0d56f35241523fbab1'
+    tokens: {
+      ETH: {
+        address: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+        symbol: 'ETH',
+        name: 'Ethereum'
+      },
+      USDC: {
+        address: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831',
+        symbol: 'USDC',
+        name: 'USD Coin'
+      },
+      WETH: {
+        address: '0x82af49447d8a07e3bd95bd0d56f35241523fbab1',
+        symbol: 'WETH',
+        name: 'Wrapped Ethereum'
+      }
+    }
   },
   [NetworkEnum.COINBASE]: {
     name: 'Base',
-    usdcAddress: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
-    degenAddress: '0x4ed4E862860beD51a9570b96d89aF5E1B0Efefed',
-    wethAddress: '0x4200000000000000000000000000000000000006'
-  },
-  [NetworkEnum.ETHEREUM]: {
-    name: 'Ethereum',
-    wethAddress: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-  },
-  [NetworkEnum.OPTIMISM]: {
-    name: 'OP Mainnet',
-    wethAddress: '0x4200000000000000000000000000000000000006'
-  },
-  [NetworkEnum.GNOSIS]: {
-    name: 'Gnosis',
-    wethAddress: '0x6A023CCd1ff6F2045C3309768eAd9E68F978f6e1'
+    tokens: {
+      ETH: {
+        address: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+        symbol: 'ETH',
+        name: 'Ethereum'
+      },
+      USDC: {
+        address: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',
+        symbol: 'USDC',
+        name: 'USD Coin'
+      },
+      WETH: {
+        address: '0x4200000000000000000000000000000000000006',
+        symbol: 'WETH',
+        name: 'Wrapped Ethereum'
+      }
+    }
   }
 };
 
@@ -61,11 +78,16 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
   const [amount, setAmount] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [sourceChain, setSourceChain] = useState<NetworkEnum>(
-    NetworkEnum.ARBITRUM
-  );
+  const [sourceChain, setSourceChain] = useState<NetworkEnum>(NetworkEnum.ARBITRUM);
+  const [selectedToken, setSelectedToken] = useState<string>('ETH');
 
   const { data: walletClient } = useWalletClient();
+  const { data: tokenBalance } = useBalance({
+    address: walletClient?.account.address,
+    token: selectedToken === 'ETH' ? undefined : SUPPORTED_NETWORKS[sourceChain].tokens[selectedToken].address as `0x${string}`,
+    chainId: sourceChain,
+    watch: true,
+  });
 
   // Get the safe's current balance
   const { data: safeBalance } = useBalance({
@@ -132,11 +154,14 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
       });
 
       // Setup cross-chain transfer parameters
+      const srcToken = SUPPORTED_NETWORKS[sourceChain].tokens[selectedToken];
+      const dstToken = SUPPORTED_NETWORKS[NetworkEnum.COINBASE].tokens[selectedToken];
+
       const params = {
         srcChainId: sourceChain,
         dstChainId: NetworkEnum.COINBASE,
-        srcTokenAddress: SUPPORTED_NETWORKS[sourceChain].usdcAddress,
-        dstTokenAddress: SUPPORTED_NETWORKS[NetworkEnum.COINBASE].wethAddress,
+        srcTokenAddress: srcToken.address,
+        dstTokenAddress: dstToken.address,
         amount: parseEther(amount).toString(),
         enableEstimate: true,
         walletAddress: walletClient.account.address
@@ -217,13 +242,16 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
         <div className="flex items-center gap-2 text-sm text-gray-500">
           <Wallet className="h-4 w-4" />
           Balance:{' '}
-          {walletBalance ? `${formatEther(walletBalance.value)} ETH` : '...'}
+          {tokenBalance ? `${formatEther(tokenBalance.value)} ${selectedToken}` : '...'}
         </div>
       </div>
 
       <Select
         value={sourceChain.toString()}
-        onValueChange={(value) => setSourceChain(Number(value) as NetworkEnum)}
+        onValueChange={(value) => {
+          setSourceChain(Number(value) as NetworkEnum);
+          setSelectedToken('ETH');
+        }}
       >
         <SelectTrigger>
           <SelectValue placeholder="Select source chain" />
@@ -237,11 +265,30 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
         </SelectContent>
       </Select>
 
+      <Select
+        value={selectedToken}
+        onValueChange={setSelectedToken}
+      >
+        <SelectTrigger>
+          <SelectValue placeholder="Select token" />
+        </SelectTrigger>
+        <SelectContent>
+          {Object.entries(SUPPORTED_NETWORKS[sourceChain].tokens).map(([symbol, token]) => (
+            <SelectItem key={symbol} value={symbol}>
+              <div className="flex items-center gap-2">
+                <span>{token.symbol}</span>
+                <span className="text-gray-500 text-sm">({token.name})</span>
+              </div>
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
       <div className="space-y-2">
         <div className="flex gap-4">
           <Input
             type="text"
-            placeholder="Amount in ETH"
+            placeholder={`Amount in ${selectedToken}`}
             value={amount}
             onChange={handleAmountChange}
             className="text-xl"
