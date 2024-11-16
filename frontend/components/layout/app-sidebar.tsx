@@ -1,5 +1,4 @@
 'use client';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   Collapsible,
   CollapsibleContent,
@@ -47,7 +46,13 @@ import { Icons } from '../icons';
 import { UserNav } from './user-nav';
 import { useAccount, useDisconnect } from 'wagmi';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
-
+import {
+  Avatar,
+  Identity,
+  Name,
+  Badge,
+  Address
+} from '@coinbase/onchainkit/identity';
 export const company = {
   name: 'ETHGlobal',
   logo: GalleryVerticalEnd,
@@ -55,7 +60,7 @@ export const company = {
 };
 
 export default function AppSidebar() {
-  const { isConnected } = useAccount();
+  const { address, isConnected } = useAccount();
   const { disconnect } = useDisconnect();
   const pathname = usePathname();
 

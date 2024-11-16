@@ -319,11 +319,13 @@ export default function Component() {
       case 'token-creation':
         return (
           <div className="space-y-6">
-            <h2 className="text-center text-4xl font-bold">Create Your Token 🪙</h2>
+            <h2 className="text-center text-4xl font-bold">
+              Create Your Token ✨
+            </h2>
             <div className="rounded-lg bg-gray-50 p-8">
-              <p className="mb-8 text-center text-xl text-gray-600">
+              {/* <p className="mb-8 text-center text-xl text-gray-600">
                 Choose a name and symbol for your shared token
-              </p>
+              </p> */}
               <TokenCreationForm
                 onSubmit={(name, ticker) => {
                   console.log('Creating token:', { name, ticker });
@@ -337,7 +339,9 @@ export default function Component() {
       case 'token-pending':
         return (
           <div className="space-y-6 text-center">
-            <h2 className="text-4xl font-bold">Creating Tokens...</h2>
+            <h2 className="text-4xl font-bold">
+              Launching a token from your bag...
+            </h2>
             <div className="flex justify-center">
               <Loader2 className="h-16 w-16 animate-spin text-blue-600" />
             </div>

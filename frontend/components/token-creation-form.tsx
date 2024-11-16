@@ -9,8 +9,8 @@ import { parseEther } from 'viem';
 import { base, baseSepolia, mainnet, sepolia } from 'viem/chains';
 
 const TOKEN_FACTORY_ADDRESSES: { [chainId: number]: `0x${string}` } = {
-  [base.id]: '0x4D4c405b2Ff2342bA3cE3c2c6087F3CEf9b6d2eA',
-  [baseSepolia.id]: '0x4D4c405b2Ff2342bA3cE3c2c6087F3CEf9b6d2eA',
+  [base.id]: '0x250c9FB2b411B48273f69879007803790A6AeA47',
+  [baseSepolia.id]: '0x0000000000000000000000000000000000000000',
   [mainnet.id]: '0x0000000000000000000000000000000000000000',
   [sepolia.id]: '0x0000000000000000000000000000000000000000'
 } as const;
@@ -44,7 +44,6 @@ const TOKEN_FACTORY_ABI = [
   }
 ] as const;
 
-
 interface TokenCreationFormProps {
   onSubmit: (tokenName: string, tokenTicker: string) => void;
   isLoading?: boolean;
@@ -58,14 +57,15 @@ export function TokenCreationForm({
   const [tokenTicker, setTokenTicker] = useState('');
   const [error, setError] = useState<string | null>(null);
 
-  const { writeContractAsync, isPending: isContractWritePending } = useWriteContract();
+  const { writeContractAsync, isPending: isContractWritePending } =
+    useWriteContract();
   const { chain } = useAccount();
   const { chains } = useConfig();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    
+
     if (!chain) {
       setError('Please connect your wallet to continue');
       return;
@@ -73,7 +73,7 @@ export function TokenCreationForm({
 
     try {
       const factoryAddress = getTokenFactoryAddress(chain.id);
-      
+
       const defaultParams = {
         supply: parseEther('1000000000'), // 1 billion tokens with 18 decimals
         initialTick: -207400n,
@@ -100,7 +100,9 @@ export function TokenCreationForm({
       onSubmit(tokenName, tokenTicker);
     } catch (error) {
       console.error('Error deploying token:', error);
-      setError(error instanceof Error ? error.message : 'Failed to deploy token');
+      setError(
+        error instanceof Error ? error.message : 'Failed to deploy token'
+      );
     }
   };
 
@@ -144,20 +146,28 @@ export function TokenCreationForm({
       </div>
 
       {!chain && (
-        <p className="text-yellow-600">Please connect your wallet to continue</p>
+        <p className="text-yellow-600">
+          Please connect your wallet to continue
+        </p>
       )}
       {chain && !TOKEN_FACTORY_ADDRESSES[chain.id] && (
         <p className="text-red-600">
-          Token creation is not supported on {chain.name}. 
-          Supported chains: {chains
-            .filter(c => TOKEN_FACTORY_ADDRESSES[c.id])
-            .map(c => c.name)
+          Token creation is not supported on {chain.name}. Supported chains:{' '}
+          {chains
+            .filter((c) => TOKEN_FACTORY_ADDRESSES[c.id])
+            .map((c) => c.name)
             .join(', ')}
         </p>
       )}
       <Button
         type="submit"
-        disabled={isLoading || !tokenName || !tokenTicker || !chain || !TOKEN_FACTORY_ADDRESSES[chain?.id]}
+        disabled={
+          isLoading ||
+          !tokenName ||
+          !tokenTicker ||
+          !chain ||
+          !TOKEN_FACTORY_ADDRESSES[chain?.id]
+        }
         className="mt-8 h-16 w-full text-xl"
       >
         {isLoading ? (
@@ -169,9 +179,7 @@ export function TokenCreationForm({
           'Create Token'
         )}
       </Button>
-      {error && (
-        <p className="mt-4 text-sm text-red-500">{error}</p>
-      )}
+      {error && <p className="mt-4 text-sm text-red-500">{error}</p>}
     </form>
   );
 }

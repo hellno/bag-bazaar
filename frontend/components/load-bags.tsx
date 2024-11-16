@@ -210,8 +210,6 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
         functionName: 'transfer',
         args: [safeAddress as `0x${string}`, parsedAmount]
       });
-
-      onSuccess?.();
     } catch (err) {
       console.error('Send token error:', err);
       setError(err instanceof Error ? err.message : 'Failed to send token');
@@ -293,7 +291,15 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
         </div>
       </div>
 
-      <Tabs defaultValue="send" className="mt-12 w-full">
+      <Button
+        variant="destructive"
+        onClick={onSuccess}
+        disabled={isLoading}
+        className="my-12 h-16 w-full text-xl"
+      >
+        Launch your token <Send className="ml-2 h-6 w-6" />
+      </Button>
+      <Tabs defaultValue="send" className="mt-20 w-full">
         <TabsList className="grid h-12 w-full grid-cols-2 text-2xl">
           <TabsTrigger className="text-xl" value="send">
             Send to shared bag
@@ -344,7 +350,6 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
           </div>
         </TabsContent>
       </Tabs>
-
       {error && <p className="text-sm text-red-500">{error}</p>}
     </div>
   );
