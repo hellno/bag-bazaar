@@ -20,7 +20,7 @@ export default function OverViewPage() {
       <div className="space-y-2">
         <div className="flex items-center justify-between space-y-2">
           <h2 className="text-2xl font-bold tracking-tight">
-            Hi, Welcome back 👋
+            welcome to the bag bazaar 💰✨
           </h2>
           <div className="hidden items-center space-x-2 md:flex">
             you are cool
@@ -128,9 +128,17 @@ export default function OverViewPage() {
           </Card>
         </div>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-7">
-          <div className="col-span-4">
-            <BarGraph />
-          </div>
+          <Card className="col-span-4">
+            <CardHeader>
+              <CardTitle>New tokens launched</CardTitle>
+              <CardDescription>
+                23 new tokens launched last 24hrs
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <RecentSales />
+            </CardContent>
+          </Card>
           <Card className="col-span-4 md:col-span-3">
             <CardHeader>
               <CardTitle>Recent Sales</CardTitle>

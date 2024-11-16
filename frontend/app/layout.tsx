@@ -1,3 +1,4 @@
+import '@coinbase/onchainkit/styles.css';
 import { auth } from '@/auth';
 import Providers from '@/components/layout/providers';
 import { Toaster } from '@/components/ui/sonner';
@@ -7,8 +8,8 @@ import NextTopLoader from 'nextjs-toploader';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Next Shadcn',
-  description: 'Basic dashboard with Next.js and Shadcn'
+  title: 'bag bazaar 💰',
+  description: 'buy and sell your bags - by hellno'
 };
 
 const lato = Lato({

@@ -31,7 +31,7 @@ export default function Providers({
     <WagmiProvider config={wagmiConfig} initialState={initialState}>
       <QueryClientProvider client={queryClient}>
         <OnchainKitProvider
-          chain={[base]}
+          chain={base}
           apiKey={process.env.NEXT_PUBLIC_ONCHAINKIT_API_KEY!}
         >
           <RainbowKitProvider modalSize="compact">

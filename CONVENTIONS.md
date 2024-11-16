@@ -1,3 +1,7 @@
+# Project Conventions
+
+we use pnpm.
+
 # Coding Conventions
 
 ## Introduction
