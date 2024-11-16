@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Loader2, X } from 'lucide-react';
 import { useAddress, useName } from '@coinbase/onchainkit/identity';
 import { Button } from './ui/button';
+import debounce from 'lodash/debounce';
 
 interface AddressInputProps {
   value: string;
@@ -47,75 +48,56 @@ export function AddressInput({
   const isLoading = isLoadingName || isLoadingAddress;
 
   useEffect(() => {
-    let isMounted = true; // For cleanup
+    const newResolvedData = validateEntry(input);
+    setResolvedData(newResolvedData);
+    debouncedOnChange(input, newResolvedData.isValid, newResolvedData.resolvedAddress);
 
-    const validateAndResolveEntry = async () => {
-      // Don't resolve empty inputs
-      if (!input.trim()) {
-        if (isMounted) {
-          setResolvedData({ isValid: false });
-          onChange(input, false);
-        }
-        return;
-      }
-
-      const isEthAddress = /^0x[a-fA-F0-9]{40}$/.test(input);
-      const isEns = input.toLowerCase().endsWith('.eth');
-      const isEmail = EMAIL_REGEX.test(input);
-
-      let newResolvedData: ResolvedData = {
-        isValid: false
-      };
-
-      try {
-        if (isEthAddress) {
-          newResolvedData = {
-            resolvedAddress: input,
-            resolvedName,
-            isValid: true
-          };
-        } else if (isEns && resolvedAddress) {
-          newResolvedData = {
-            resolvedAddress,
-            resolvedName: input,
-            isValid: true
-          };
-        } else if (isEmail) {
-          newResolvedData = {
-            resolvedAddress: undefined,
-            resolvedName: input,
-            isValid: true
-          };
-        }
-
-        if (isMounted) {
-          setResolvedData(newResolvedData);
-          onChange(
-            input,
-            newResolvedData.isValid,
-            newResolvedData.resolvedAddress
-          );
-        }
-      } catch (error) {
-        console.error('Error in validation:', error);
-        if (isMounted) {
-          setResolvedData({ isValid: false });
-          onChange(input, false);
-        }
-      }
-    };
-
-    validateAndResolveEntry();
-
-    // Cleanup function
     return () => {
-      isMounted = false;
+      debouncedOnChange.cancel();
     };
-  }, [input, resolvedName, resolvedAddress, onChange]);
+  }, [input, validateEntry, debouncedOnChange]);
+
+  // Debounce the onChange callback
+  const debouncedOnChange = useCallback(
+    debounce((value: string, isValid: boolean, resolvedAddress?: string) => {
+      onChange(value, isValid, resolvedAddress);
+    }, 500),
+    [onChange]
+  );
+
+  // Separate validation logic
+  const validateEntry = useCallback((input: string) => {
+    if (!input.trim()) {
+      return { isValid: false };
+    }
+
+    const isEthAddress = /^0x[a-fA-F0-9]{40}$/.test(input);
+    const isEns = input.toLowerCase().endsWith('.eth');
+    const isEmail = EMAIL_REGEX.test(input);
+
+    if (isEthAddress) {
+      return {
+        resolvedAddress: input,
+        isValid: true
+      };
+    } else if (isEns && resolvedAddress) {
+      return {
+        resolvedAddress,
+        resolvedName: input,
+        isValid: true
+      };
+    } else if (isEmail) {
+      return {
+        resolvedName: input,
+        isValid: true
+      };
+    }
+
+    return { isValid: false };
+  }, [resolvedAddress]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = e.target.value;
-    setInput(newValue);
+    setInput(e.target.value);
   };
 
   return (
