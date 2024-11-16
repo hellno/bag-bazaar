@@ -300,14 +300,15 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
         secretsCount === 1
           ? HashLock.forSingleFill(secrets[0])
           : HashLock.forMultipleFills(
-              secretHashes.map((secretHash, i) => {
-                return keccak256(
+              secretHashes.map((secretHash, i) => ({
+                _tag: "MerkleLeaf" as const,
+                value: keccak256(
                   encodePacked(
                     ['uint64', 'bytes32'],
                     [BigInt(i), secretHash as `0x${string}`]
                   ) as `0x${string}`
-                );
-              })
+                )
+              }))
             );
 
       // Place order
