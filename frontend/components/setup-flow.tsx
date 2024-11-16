@@ -168,7 +168,7 @@ export default function Component() {
     } catch (error) {
       // Type guard to ensure error is an Error object
       const err = error as Error;
-      
+
       console.error('Error deploying Safe:', err);
       console.error('Error details:', {
         name: err.name,
@@ -267,14 +267,16 @@ export default function Component() {
       case 'verification':
         return (
           <div className="space-y-6 text-center">
-            <h2 className="text-4xl font-bold">Shared bags are ready</h2>
+            <h2 className="text-4xl font-bold">Shared bag is ready 🎒</h2>
             <div className="space-y-4">
               <p className="text-xl text-gray-600"></p>
               {safeDeploymentStatus.safeAddress && (
                 <div className="rounded-lg bg-gray-50 p-4">
                   <p className="font-mono text-sm">
                     Safe Address:{' '}
-                    <BlockscoutLink address={safeDeploymentStatus.safeAddress} />
+                    <BlockscoutLink
+                      address={safeDeploymentStatus.safeAddress}
+                    />
                   </p>
                 </div>
               )}
@@ -291,14 +293,16 @@ export default function Component() {
       case 'completion':
         return (
           <div className="space-y-6 text-center">
-            <h2 className="text-4xl font-bold">Bags are ready! 🎒</h2>
+            <h2 className="text-4xl font-bold">Shared bag is ready 🎒</h2>
             <div className="rounded-lg bg-gray-50 p-6">
               <p className="mb-4 text-xl text-gray-600">
                 Prepare your shared bag
               </p>
               <div className="mb-6 font-mono text-sm">
                 Safe Address:{' '}
-                <BlockscoutLink address={safeDeploymentStatus.safeAddress ?? ''} />
+                <BlockscoutLink
+                  address={safeDeploymentStatus.safeAddress ?? ''}
+                />
               </div>
 
               {safeDeploymentStatus.safeAddress && (
@@ -317,7 +321,7 @@ export default function Component() {
             <h2 className="text-4xl font-bold">Create Tokens 🪙</h2>
             <div className="rounded-lg bg-gray-50 p-6">
               <p className="mb-4 text-xl text-gray-600">
-                Creating tokens for your shared bag
+                Creating a token from your shared bag
               </p>
               <Button
                 onClick={() => setCurrentStep('token-pending')}
