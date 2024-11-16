@@ -84,30 +84,20 @@ export function TokenCreationForm({
   const [error, setError] = useState<string | null>(null);
   const [isGeneratingSalt, setIsGeneratingSalt] = useState(false);
 
-  const generateTokenSalt = async (
-    factoryAddress: `0x${string}`,
-    deployer: `0x${string}`,
-    name: string,
-    symbol: string,
-    supply: bigint
-  ): Promise<{ salt: `0x${string}`; predictedAddress: `0x${string}` }> => {
-    try {
-      const [salt, predictedAddress] = await readContract({
-        address: factoryAddress,
-        abi: TOKEN_FACTORY_ABI,
-        functionName: 'generateSalt',
-        args: [deployer, name, symbol, supply]
-      });
-
-      return {
-        salt,
-        predictedAddress
-      };
-    } catch (error) {
-      console.error('Error generating salt:', error);
-      throw new Error('Failed to generate salt for token deployment');
+  const { data: saltData, isLoading: isSaltLoading } = useReadContract({
+    address: getTokenFactoryAddress(chain?.id ?? base.id),
+    abi: TOKEN_FACTORY_ABI,
+    functionName: 'generateSalt',
+    args: [
+      address!, // deployer address
+      tokenName,
+      tokenTicker,
+      parseEther('1000000000') // supply
+    ],
+    query: {
+      enabled: !!address && !!tokenName && !!tokenTicker && !!chain
     }
-  };
+  });
 
   const { writeContractAsync, isPending: isContractWritePending } =
     useWriteContract();
@@ -123,22 +113,18 @@ export function TokenCreationForm({
       return;
     }
 
-    setIsGeneratingSalt(true);
+    if (!saltData) {
+      setError('Failed to generate salt');
+      return;
+    }
+
+    const [salt, predictedAddress] = saltData;
+    console.log('Generated salt:', salt);
+    console.log('Predicted token address:', predictedAddress);
+
     try {
       const factoryAddress = getTokenFactoryAddress(chain.id);
       const supply = parseEther('1000000000'); // 1 billion tokens with 18 decimals
-
-      // Generate salt before deployment
-      const { salt, predictedAddress } = await generateTokenSalt(
-        factoryAddress,
-        address,
-        tokenName,
-        tokenTicker,
-        supply
-      );
-
-      console.log('Generated salt:', salt);
-      console.log('Predicted token address:', predictedAddress);
 
       const tx = await writeContractAsync({
         address: factoryAddress,
@@ -221,7 +207,7 @@ export function TokenCreationForm({
         type="submit"
         disabled={
           isLoading ||
-          isGeneratingSalt ||
+          isSaltLoading ||
           !tokenName ||
           !tokenTicker ||
           !chain ||
@@ -229,7 +215,7 @@ export function TokenCreationForm({
         }
         className="mt-8 h-16 w-full text-xl"
       >
-        {isGeneratingSalt ? (
+        {isSaltLoading ? (
           <>
             <Loader2 className="mr-2 h-6 w-6 animate-spin" />
             Generating Salt...
