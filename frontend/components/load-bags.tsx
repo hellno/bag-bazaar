@@ -6,7 +6,6 @@ import { Input } from '@/components/ui/input';
 import { Loader2, ArrowRight, Wallet } from 'lucide-react';
 import { parseEther, formatEther } from 'viem';
 import { useBalance, useWalletClient } from 'wagmi';
-import { WalletClient } from 'wagmi';
 import {
   Select,
   SelectContent,
@@ -204,7 +203,7 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
         {
           sendTransaction: async (tx) => {
             if (!walletClient) throw new Error('Wallet client not available');
-            
+
             return await walletClient.sendTransaction({
               to: tx.to as `0x${string}`,
               data: tx.data as `0x${string}`,
@@ -214,7 +213,7 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
           },
           signMessage: async (message) => {
             if (!walletClient) throw new Error('Wallet client not available');
-            
+
             return await walletClient.signMessage({
               message
             });

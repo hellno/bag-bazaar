@@ -34,7 +34,7 @@ export function AddressInput({
 
   // Use hooks for ENS resolution
   const { data: resolvedName, isLoading: isLoadingName } = useName({
-    address: input
+    address: input as `0x${string}`
   });
   const { data: resolvedAddress, isLoading: isLoadingAddress } = useAddress({
     name: input
@@ -50,13 +50,13 @@ export function AddressInput({
     // Don't resolve empty inputs
     if (!input.trim()) {
       setResolvedData({ isValid: false });
-      onChange(input, undefined);
+      onChange(input, false);
       return;
     }
 
     const isEthAddress = /^0x[a-fA-F0-9]{40}$/.test(input);
     const isEns = input.toLowerCase().endsWith('.eth');
-    
+
     let newResolvedData: ResolvedData = {
       isValid: false
     };
