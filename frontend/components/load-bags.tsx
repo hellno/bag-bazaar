@@ -6,7 +6,6 @@ import { Input } from '@/components/ui/input';
 import { Loader2, ArrowRight, Wallet } from 'lucide-react';
 import { parseEther, formatEther } from 'viem';
 import { useBalance, useWalletClient } from 'wagmi';
-import { Web3Like } from '@1inch/cross-chain-sdk/web3-provider-connector';
 import {
   Select,
   SelectContent,
@@ -247,7 +246,15 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
               message
             });
           }
-        } as Web3Like
+        } as {
+          eth: {
+              call(transactionConfig: {
+                data?: string
+                to?: string
+            }): Promise<string>
+          }
+          extend(extension: unknown): any
+      }
       );
 
       const sdk = new SDK({
