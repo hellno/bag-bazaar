@@ -50,11 +50,12 @@ export default function Component() {
   };
 
   const removeEntry = (index: number) => {
+    console.log('Removing entry at index:', index);
+    console.log('Current entries:', entries);
+    
     if (entries.length > 1) {
-      // Create a new array without mutating the original
-      const newEntries = [...entries];
-      // Remove the entry at the specific index
-      newEntries.splice(index, 1);
+      const newEntries = entries.filter((_, i) => i !== index);
+      console.log('New entries after removal:', newEntries);
       setEntries(newEntries);
     }
   };

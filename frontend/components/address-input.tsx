@@ -47,6 +47,13 @@ export function AddressInput({
   }, [input, resolvedName, resolvedAddress]);
 
   const validateAndResolveEntry = () => {
+    // Don't resolve empty inputs
+    if (!input.trim()) {
+      setResolvedData({ isValid: false });
+      onChange(input, undefined);
+      return;
+    }
+
     const isEthAddress = /^0x[a-fA-F0-9]{40}$/.test(input);
     const isEns = input.toLowerCase().endsWith('.eth');
     
