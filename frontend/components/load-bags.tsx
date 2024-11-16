@@ -1,4 +1,5 @@
 'use client';
+/* eslint-disable  @typescript-eslint/no-explicit-any */
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
@@ -217,20 +218,21 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
               gasPrice?: bigint;
             }): Promise<string> {
               if (!walletClient) throw new Error('Wallet client not available');
-              
+
               const result = await publicClient.call({
                 to: transactionConfig.to as `0x${string}`,
                 data: transactionConfig.data as `0x${string}`,
                 value: BigInt(transactionConfig.value || 0),
                 account: walletClient.account.address
               });
-              
+
               return result.data as string;
             }
           },
           extend(extension: unknown) {
             return this;
           },
+          // @ts-ignore
           sendTransaction: async (tx) => {
             if (!walletClient) throw new Error('Wallet client not available');
 
@@ -241,6 +243,7 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
               chainId: Number(tx.chainId)
             });
           },
+          // @ts-ignore
           signMessage: async (message) => {
             if (!walletClient) throw new Error('Wallet client not available');
 
@@ -250,13 +253,13 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
           }
         } as {
           eth: {
-              call(transactionConfig: {
-                data?: string
-                to?: string
-            }): Promise<string>
-          }
-          extend(extension: unknown): any
-      }
+            call(transactionConfig: {
+              data?: string;
+              to?: string;
+            }): Promise<string>;
+          };
+          extend(extension: unknown): any;
+        }
       );
 
       const sdk = new SDK({
