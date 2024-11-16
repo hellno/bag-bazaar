@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Loader2 } from 'lucide-react';
-import { useWriteContract, useNetwork } from 'wagmi';
+import { useWriteContract, useAccount, useConfig } from 'wagmi';
 import { parseEther } from 'viem';
 import { base, baseSepolia, mainnet, sepolia } from 'viem/chains';
 
@@ -59,7 +59,8 @@ export function TokenCreationForm({
   const [error, setError] = useState<string | null>(null);
 
   const { writeContractAsync, isPending: isContractWritePending } = useWriteContract();
-  const { chain } = useNetwork();
+  const { chain } = useAccount();
+  const { chains } = useConfig();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -146,7 +147,13 @@ export function TokenCreationForm({
         <p className="text-yellow-600">Please connect your wallet to continue</p>
       )}
       {chain && !TOKEN_FACTORY_ADDRESSES[chain.id] && (
-        <p className="text-red-600">Token creation is not supported on this network</p>
+        <p className="text-red-600">
+          Token creation is not supported on {chain.name}. 
+          Supported chains: {chains
+            .filter(c => TOKEN_FACTORY_ADDRESSES[c.id])
+            .map(c => c.name)
+            .join(', ')}
+        </p>
       )}
       <Button
         type="submit"
