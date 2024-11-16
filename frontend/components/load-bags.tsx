@@ -191,8 +191,9 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
   const { writeContractAsync } = useWriteContract();
 
   const handleSendToken = async () => {
-    if (!selectedToken || !amount || !safeAddress) {
-      setError('Missing required parameters');
+    // First check if we have WETH token and valid amount
+    if (!amount || !safeAddress) {
+      setError('Missing amount or safe address');
       return;
     }
 
@@ -200,11 +201,12 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
     setError(null);
 
     try {
-      const parsedAmount = parseUnits(amount, selectedToken.decimals);
+      const parsedAmount = parseEther(amount);
 
+      // Use the WETH token address directly since that's what we're sending
       await writeContractAsync({
         abi: ERC20_ABI,
-        address: selectedToken.address as `0x${string}`,
+        address: WETH_ADDRESS as `0x${string}`, // Use the constant WETH address
         functionName: 'transfer',
         args: [safeAddress as `0x${string}`, parsedAmount]
       });
