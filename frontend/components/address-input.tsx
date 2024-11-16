@@ -47,24 +47,6 @@ export function AddressInput({
 
   const isLoading = isLoadingName || isLoadingAddress;
 
-  useEffect(() => {
-    const newResolvedData = validateEntry(input);
-    setResolvedData(newResolvedData);
-    debouncedOnChange(input, newResolvedData.isValid, newResolvedData.resolvedAddress);
-
-    return () => {
-      debouncedOnChange.cancel();
-    };
-  }, [input, validateEntry, debouncedOnChange]);
-
-  // Debounce the onChange callback
-  const debouncedOnChange = useCallback(
-    debounce((value: string, isValid: boolean, resolvedAddress?: string) => {
-      onChange(value, isValid, resolvedAddress);
-    }, 500),
-    [onChange]
-  );
-
   // Separate validation logic
   const validateEntry = useCallback((input: string) => {
     if (!input.trim()) {
@@ -95,6 +77,24 @@ export function AddressInput({
 
     return { isValid: false };
   }, [resolvedAddress]);
+
+  // Debounce the onChange callback
+  const debouncedOnChange = useCallback(
+    debounce((value: string, isValid: boolean, resolvedAddress?: string) => {
+      onChange(value, isValid, resolvedAddress);
+    }, 500),
+    [onChange]
+  );
+
+  useEffect(() => {
+    const newResolvedData = validateEntry(input);
+    setResolvedData(newResolvedData);
+    debouncedOnChange(input, newResolvedData.isValid, newResolvedData.resolvedAddress);
+
+    return () => {
+      debouncedOnChange.cancel();
+    };
+  }, [input, validateEntry, debouncedOnChange]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInput(e.target.value);
