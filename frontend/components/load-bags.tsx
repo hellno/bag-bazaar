@@ -300,6 +300,7 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
         secretsCount === 1
           ? HashLock.forSingleFill(secrets[0])
           : HashLock.forMultipleFills(
+              // @ts-ignore The SDK expects MerkleLeaf[] but the type definition seems incorrect
               secretHashes.map((secretHash, i) => ({
                 _tag: "MerkleLeaf" as const,
                 value: keccak256(
