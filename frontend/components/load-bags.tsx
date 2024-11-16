@@ -5,6 +5,12 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Loader2, ArrowRight, Wallet, Send } from 'lucide-react';
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger
+} from "@/components/ui/tabs";
 import { useWriteContract } from 'wagmi';
 import { buildSwapTransaction, getTokens } from '@coinbase/onchainkit/api';
 import type { Token } from '@coinbase/onchainkit/token';
@@ -208,113 +214,189 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
   return (
     <div className="space-y-4 rounded-lg bg-gray-50 p-6">
       <div className="mb-4 flex items-center justify-between">
-        {/* <h3 className="text-lg font-medium">Load your shared bag</h3> */}
         <div className="flex items-center gap-2 text-sm text-gray-500">
           <Wallet className="h-4 w-4" />
           Balance:{' '}
           {tokenBalance
-            ? `${formatEther(tokenBalance.value)} ${selectedToken.name}`
+            ? `${formatEther(tokenBalance.value)} ${selectedToken?.symbol}`
             : '...'}
         </div>
       </div>
 
-      <Select
-        value={selectedToken?.address ?? ''}
-        onValueChange={(value) => {
-          const token = availableTokens.find((t) => t.address === value);
-          setSelectedToken(token ?? null);
-        }}
-        disabled={isLoadingTokens}
-      >
-        <SelectTrigger>
-          <SelectValue placeholder="Select token">
-            {selectedToken ? (
-              <div className="flex items-center gap-2">
-                {selectedToken.image && (
-                  <img
-                    src={selectedToken.image}
-                    alt={selectedToken.symbol}
-                    className="h-5 w-5 rounded-full"
-                  />
-                )}
-                <span>{selectedToken.symbol}</span>
-              </div>
-            ) : (
-              'Select token'
-            )}
-          </SelectValue>
-        </SelectTrigger>
-        <SelectContent>
-          {isLoadingTokens ? (
-            <SelectItem value="loading" disabled>
-              <div className="flex items-center gap-2">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Loading tokens...
-              </div>
-            </SelectItem>
-          ) : (
-            availableTokens.map((token) => (
-              <SelectItem key={token.address} value={token.address}>
-                <div className="flex items-center gap-2">
-                  {token.image && (
-                    <img
-                      src={token.image}
-                      alt={token.symbol}
-                      className="h-5 w-5 rounded-full"
-                    />
+      <Tabs defaultValue="send" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="send">Send Tokens</TabsTrigger>
+          <TabsTrigger value="swap">Swap Tokens</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="send" className="space-y-4">
+          <div className="rounded-lg border p-4">
+            <h3 className="mb-4 text-lg font-medium">Send Tokens to Safe</h3>
+            <Select
+              value={selectedToken?.address ?? ''}
+              onValueChange={(value) => {
+                const token = availableTokens.find((t) => t.address === value);
+                setSelectedToken(token ?? null);
+              }}
+              disabled={isLoadingTokens}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select token">
+                  {selectedToken ? (
+                    <div className="flex items-center gap-2">
+                      {selectedToken.image && (
+                        <img
+                          src={selectedToken.image}
+                          alt={selectedToken.symbol}
+                          className="h-5 w-5 rounded-full"
+                        />
+                      )}
+                      <span>{selectedToken.symbol}</span>
+                    </div>
+                  ) : (
+                    'Select token'
                   )}
-                  <span>{token.symbol}</span>
-                  <span className="text-sm text-gray-500">({token.name})</span>
-                </div>
-              </SelectItem>
-            ))
-          )}
-        </SelectContent>
-      </Select>
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {isLoadingTokens ? (
+                  <SelectItem value="loading" disabled>
+                    <div className="flex items-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Loading tokens...
+                    </div>
+                  </SelectItem>
+                ) : (
+                  availableTokens.map((token) => (
+                    <SelectItem key={token.address} value={token.address}>
+                      <div className="flex items-center gap-2">
+                        {token.image && (
+                          <img
+                            src={token.image}
+                            alt={token.symbol}
+                            className="h-5 w-5 rounded-full"
+                          />
+                        )}
+                        <span>{token.symbol}</span>
+                        <span className="text-sm text-gray-500">({token.name})</span>
+                      </div>
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
 
-      <div className="space-y-2">
-        <div className="flex gap-4">
-          <Input
-            type="text"
-            placeholder={`Amount in ${selectedToken?.symbol ?? ''}`}
-            value={amount}
-            onChange={handleAmountChange}
-            className="text-xl"
-            disabled={isLoading}
-          />
-          <div className="flex gap-2">
-            <Button
-              onClick={handleSwap}
-              disabled={isLoading || !amount || !selectedToken}
-              className="min-w-[120px]"
-            >
-              {isLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <>
-                  Swap <ArrowRight className="ml-2 h-4 w-4" />
-                </>
-              )}
-            </Button>
-            <Button
-              onClick={handleSendToken}
-              disabled={isLoading || !amount || !selectedToken}
-              variant="secondary"
-              className="min-w-[120px]"
-            >
-              {isLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <>
-                  Send <Send className="ml-2 h-4 w-4" />
-                </>
-              )}
-            </Button>
+            <div className="mt-4 space-y-4">
+              <Input
+                type="text"
+                placeholder={`Amount in ${selectedToken?.symbol ?? ''}`}
+                value={amount}
+                onChange={handleAmountChange}
+                className="text-xl"
+                disabled={isLoading}
+              />
+              <Button
+                onClick={handleSendToken}
+                disabled={isLoading || !amount || !selectedToken}
+                className="w-full"
+              >
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <>
+                    Send to Safe <Send className="ml-2 h-4 w-4" />
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
-        </div>
+        </TabsContent>
 
-        {error && <p className="text-sm text-red-500">{error}</p>}
-      </div>
+        <TabsContent value="swap" className="space-y-4">
+          <div className="rounded-lg border p-4">
+            <h3 className="mb-4 text-lg font-medium">Swap Tokens</h3>
+            <Select
+              value={selectedToken?.address ?? ''}
+              onValueChange={(value) => {
+                const token = availableTokens.find((t) => t.address === value);
+                setSelectedToken(token ?? null);
+              }}
+              disabled={isLoadingTokens}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select token">
+                  {selectedToken ? (
+                    <div className="flex items-center gap-2">
+                      {selectedToken.image && (
+                        <img
+                          src={selectedToken.image}
+                          alt={selectedToken.symbol}
+                          className="h-5 w-5 rounded-full"
+                        />
+                      )}
+                      <span>{selectedToken.symbol}</span>
+                    </div>
+                  ) : (
+                    'Select token'
+                  )}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {isLoadingTokens ? (
+                  <SelectItem value="loading" disabled>
+                    <div className="flex items-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Loading tokens...
+                    </div>
+                  </SelectItem>
+                ) : (
+                  availableTokens.map((token) => (
+                    <SelectItem key={token.address} value={token.address}>
+                      <div className="flex items-center gap-2">
+                        {token.image && (
+                          <img
+                            src={token.image}
+                            alt={token.symbol}
+                            className="h-5 w-5 rounded-full"
+                          />
+                        )}
+                        <span>{token.symbol}</span>
+                        <span className="text-sm text-gray-500">({token.name})</span>
+                      </div>
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
+
+            <div className="mt-4 space-y-4">
+              <Input
+                type="text"
+                placeholder={`Amount in ${selectedToken?.symbol ?? ''}`}
+                value={amount}
+                onChange={handleAmountChange}
+                className="text-xl"
+                disabled={isLoading}
+              />
+              <Button
+                onClick={handleSwap}
+                disabled={isLoading || !amount || !selectedToken}
+                className="w-full"
+              >
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <>
+                    Swap Tokens <ArrowRight className="ml-2 h-4 w-4" />
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </TabsContent>
+      </Tabs>
+
+      {error && <p className="text-sm text-red-500">{error}</p>}
 
       <div className="mt-4 text-sm text-gray-500">
         Safe Balance:{' '}
