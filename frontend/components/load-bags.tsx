@@ -21,9 +21,11 @@ import {
 } from '@1inch/cross-chain-sdk';
 import { encodePacked, keccak256 } from 'viem';
 
-// Helper function for random bytes generation
-function getRandomBytes32() {
-  return '0x' + Buffer.from(randomBytes(32)).toString('hex');
+// Helper function for random bytes generation using Web Crypto API
+function getRandomBytes32(): string {
+  const array = new Uint8Array(32);
+  crypto.getRandomValues(array);
+  return '0x' + Array.from(array).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
 const SUPPORTED_NETWORKS = {
