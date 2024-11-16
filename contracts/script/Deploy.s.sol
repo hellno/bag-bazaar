@@ -33,18 +33,18 @@ contract Deploy is BaseScript {
             swapRouter
         );
 
-        (Token token, ) = factory.deployToken(
-            "TestToken",
-            "TEST",
-            1_000 * 10 ** 18,
-            -207400,
-            10000,
-            bytes32(uint256(0xe)),
-            guy
-        );
-
-        console2.logAddress(address(token));
-        console2.logUint(token.balanceOf(guy));
+//        (Token token, ) = factory.deployToken(
+//            "TestToken",
+//            "TEST",
+//            1_000 * 10 ** 18,
+//            -207400,
+//            10000,
+//            bytes32(uint256(0xe)),
+//            guy
+//        );
+//
+//        console2.logAddress(address(token));
+//        console2.logUint(token.balanceOf(guy));
 
     }
 }
