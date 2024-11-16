@@ -30,11 +30,6 @@ const SUPPORTED_NETWORKS = {
   [NetworkEnum.ARBITRUM]: {
     name: 'Arbitrum',
     tokens: {
-      ETH: {
-        address: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
-        symbol: 'ETH',
-        name: 'Ethereum'
-      },
       USDC: {
         address: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831',
         symbol: 'USDC',
@@ -66,6 +61,36 @@ const SUPPORTED_NETWORKS = {
         name: 'Wrapped Ethereum'
       }
     }
+  },
+  [NetworkEnum.ETHEREUM]: {
+    name: 'Ethereum',
+    tokens: {
+      WETH: {
+        symbol: 'WETH',
+        name: 'Wrapped Ethereum',
+        address: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+      }
+    }
+  },
+  [NetworkEnum.OPTIMISM]: {
+    name: 'OP Mainnet',
+    tokens: {
+      WETH: {
+        symbol: 'WETH',
+        name: 'Wrapped Ethereum',
+        address: '0x4200000000000000000000000000000000000006'
+      }
+    }
+  },
+  [NetworkEnum.GNOSIS]: {
+    name: 'Gnosis',
+    tokens: {
+      WETH: {
+        symbol: 'WETH',
+        name: 'Wrapped Ethereum',
+        address: '0x6A023CCd1ff6F2045C3309768eAd9E68F978f6e1'
+      }
+    }
   }
 };
 
@@ -78,15 +103,21 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
   const [amount, setAmount] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [sourceChain, setSourceChain] = useState<NetworkEnum>(NetworkEnum.ARBITRUM);
+  const [sourceChain, setSourceChain] = useState<NetworkEnum>(
+    NetworkEnum.ARBITRUM
+  );
   const [selectedToken, setSelectedToken] = useState<string>('ETH');
 
   const { data: walletClient } = useWalletClient();
   const { data: tokenBalance } = useBalance({
     address: walletClient?.account.address,
-    token: selectedToken === 'ETH' ? undefined : SUPPORTED_NETWORKS[sourceChain].tokens[selectedToken].address as `0x${string}`,
+    token:
+      selectedToken === 'ETH'
+        ? undefined
+        : (SUPPORTED_NETWORKS[sourceChain].tokens[selectedToken]
+            .address as `0x${string}`),
     chainId: sourceChain,
-    watch: true,
+    watch: true
   });
 
   // Get the safe's current balance
@@ -131,31 +162,27 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
   };
 
   const handleCrossChainTransfer = async () => {
-    if (!validateAmount() || !walletClient) return;
+    if (!walletClient) return;
 
     setIsLoading(true);
     setError(null);
 
     try {
-      // Initialize 1inch SDK
-      const client = createWalletClient({
-        chain: mainnet,
-        transport: custom(window.ethereum)
-      });
       const blockchainProvider = new PrivateKeyProviderConnector(
-        process.env.NEXT_PUBLIC_WALLET_KEY!,
-        web3Instance
+        process.env.NEXT_PUBLIC_SIGNER_PRIVATE_KEY!,
+        walletClient
       );
 
       const sdk = new SDK({
         url: 'https://api.1inch.dev/fusion-plus',
-        authKey: process.env.NEXT_PUBLIC_DEV_PORTAL_KEY!,
+        authKey: process.env.NEXT_PUBLIC_1INCH_API_KEY!,
         blockchainProvider
       });
 
       // Setup cross-chain transfer parameters
       const srcToken = SUPPORTED_NETWORKS[sourceChain].tokens[selectedToken];
-      const dstToken = SUPPORTED_NETWORKS[NetworkEnum.COINBASE].tokens[selectedToken];
+      const dstToken =
+        SUPPORTED_NETWORKS[NetworkEnum.COINBASE].tokens[selectedToken];
 
       const params = {
         srcChainId: sourceChain,
@@ -242,7 +269,9 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
         <div className="flex items-center gap-2 text-sm text-gray-500">
           <Wallet className="h-4 w-4" />
           Balance:{' '}
-          {tokenBalance ? `${formatEther(tokenBalance.value)} ${selectedToken}` : '...'}
+          {tokenBalance
+            ? `${formatEther(tokenBalance.value)} ${selectedToken}`
+            : '...'}
         </div>
       </div>
 
@@ -265,22 +294,21 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
         </SelectContent>
       </Select>
 
-      <Select
-        value={selectedToken}
-        onValueChange={setSelectedToken}
-      >
+      <Select value={selectedToken} onValueChange={setSelectedToken}>
         <SelectTrigger>
           <SelectValue placeholder="Select token" />
         </SelectTrigger>
         <SelectContent>
-          {Object.entries(SUPPORTED_NETWORKS[sourceChain].tokens).map(([symbol, token]) => (
-            <SelectItem key={symbol} value={symbol}>
-              <div className="flex items-center gap-2">
-                <span>{token.symbol}</span>
-                <span className="text-gray-500 text-sm">({token.name})</span>
-              </div>
-            </SelectItem>
-          ))}
+          {Object.entries(SUPPORTED_NETWORKS[sourceChain].tokens).map(
+            ([symbol, token]) => (
+              <SelectItem key={symbol} value={symbol}>
+                <div className="flex items-center gap-2">
+                  <span>{token.symbol}</span>
+                  <span className="text-sm text-gray-500">({token.name})</span>
+                </div>
+              </SelectItem>
+            )
+          )}
         </SelectContent>
       </Select>
 
