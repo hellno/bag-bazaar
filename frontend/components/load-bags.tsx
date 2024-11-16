@@ -1,13 +1,21 @@
 'use client';
 /* eslint-disable  @typescript-eslint/no-explicit-any */
-
+import {
+  SwapDefault,
+  Swap,
+  SwapAmountInput,
+  SwapToggleButton,
+  SwapButton,
+  SwapMessage,
+  SwapToast
+} from '@coinbase/onchainkit/swap';
 import { useState, useEffect } from 'react';
-import { getSwapQuote } from '@coinbase/onchainkit/api';
+import { getTokens, getSwapQuote } from '@coinbase/onchainkit/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Loader2, Wallet, Send, ArrowRight } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useWriteContract } from 'wagmi';
+import { useAccount, useWriteContract } from 'wagmi';
 import type { Token } from '@coinbase/onchainkit/token';
 import {
   parseEther,
@@ -63,27 +71,65 @@ interface LoadBagsProps {
   onSuccess?: () => void;
 }
 
+const WETH_TOKEN: Token = {
+  name: 'Wrapped ETH',
+  address: '0x4200000000000000000000000000000000000006',
+  symbol: 'WETH',
+  decimals: 18,
+  chainId: base.id,
+  image:
+    'https://wallet-api-production.s3.amazonaws.com/uploads/tokens/weth_288.png'
+};
+
+const USDC_TOKEN: Token = {
+  name: 'USDC',
+  address: '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913',
+  symbol: 'USDC',
+  decimals: 6,
+  image:
+    'https://d3r81g40ycuhqg.cloudfront.net/wallet/wais/44/2b/442b80bd16af0c0d9b22e03a16753823fe826e5bfd457292b55fa0ba8c1ba213-ZWUzYjJmZGUtMDYxNy00NDcyLTg0NjQtMWI4OGEwYjBiODE2',
+  chainId: base.id
+};
+
+const DEGEN_TOKEN: Token = {
+  name: 'DEGEN',
+  address: '0x4ed4e862860bed51a9570b96d89af5e1b0efefed',
+  decimals: 18,
+  chainId: base.id,
+  symbol: 'DEGEN',
+  image: 'https://basescan.org/token/images/degentips_32.png'
+};
+
+const WETH_ADDRESS = WETH_TOKEN.address;
 export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
-  const WETH_TOKEN = {
-    name: 'Wrapped ETH',
-    address: '0x4200000000000000000000000000000000000006',
-    symbol: 'WETH',
-    decimals: 18,
-    chainId: base.id,
-    image: 'https://wallet-api-production.s3.amazonaws.com/uploads/tokens/weth_288.png'
-  };
+  const { address } = useAccount();
+  const [selectedToken, setSelectedToken] = useState<Token | null>(null);
+  const [availableTokens, setAvailableTokens] = useState<Token[]>([]);
+  const [isLoadingTokens, setIsLoadingTokens] = useState(true);
+  console.log('availabletokens', availableTokens);
+  // Fetch available tokens on component mount
+  useEffect(() => {
+    const fetchTokens = async () => {
+      try {
+        setIsLoadingTokens(true);
+        const tokens = await getTokens({
+          limit: '20',
+          chainId: base.id.toString()
+        });
+        setAvailableTokens(tokens);
+        if (tokens.length > 0) {
+          setSelectedToken(tokens[0]);
+        }
+      } catch (err) {
+        console.error('Failed to fetch tokens:', err);
+        setError('Failed to load available tokens');
+      } finally {
+        setIsLoadingTokens(false);
+      }
+    };
 
-  const USDC_TOKEN = {
-    name: 'USDC',
-    address: '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913',
-    symbol: 'USDC',
-    decimals: 6,
-    image: 'https://d3r81g40ycuhqg.cloudfront.net/wallet/wais/44/2b/442b80bd16af0c0d9b22e03a16753823fe826e5bfd457292b55fa0ba8c1ba213-ZWUzYjJmZGUtMDYxNy00NDcyLTg0NjQtMWI4OGEwYjBiODE2',
-    chainId: base.id,
-  };
-
-  const WETH_ADDRESS = WETH_TOKEN.address;
-  const [selectedToken] = useState<Token>(WETH_TOKEN);
+    fetchTokens();
+  }, [address]);
   const [usdBalance, setUsdBalance] = useState<string>('0.00');
 
   const [amount, setAmount] = useState<string>('');
@@ -110,9 +156,9 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
         from: WETH_TOKEN,
         to: USDC_TOKEN,
         amount: wethAmount,
-        useAggregator: false,
+        useAggregator: false
       });
-      
+
       // USDC has 6 decimals, so we format accordingly
       const usdValue = (Number(quote.toAmount) / 1e6).toFixed(2);
       setUsdBalance(usdValue);
@@ -235,26 +281,15 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
           ({safeBalance ? `${formatEther(safeBalance.value)} WETH` : '0 WETH'})
         </div>
       </div>
-      <div className="mb-4 flex items-center justify-between">
-        <div className="flex items-center gap-2 text-sm text-gray-500">
-          <Wallet className="h-4 w-4" />
-          Balance:{' '}
-          {tokenBalance
-            ? `${formatEther(tokenBalance.value)} ${selectedToken?.symbol}`
-            : '...'}
-        </div>
-      </div>
 
-      <Tabs defaultValue="send" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="send">Send Tokens</TabsTrigger>
-          <TabsTrigger value="swap">Swap Tokens</TabsTrigger>
+      <Tabs defaultValue="send" className="mt-12 w-full">
+        <TabsList className="h-12 text-2xl grid w-full grid-cols-2">
+          <TabsTrigger className="text-xl" value="send">Send to shared bag</TabsTrigger>
+          <TabsTrigger className="text-xl" value="swap">Swap tokens</TabsTrigger>
         </TabsList>
 
         <TabsContent value="send" className="space-y-4">
           <div className="rounded-lg border p-4">
-            <h3 className="mb-4 text-lg font-medium">Send WETH to Safe</h3>
-
             <div className="mb-4 flex items-center gap-2 text-sm text-gray-500">
               <Wallet className="h-4 w-4" />
               Balance:{' '}
@@ -290,69 +325,7 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
 
         <TabsContent value="swap" className="space-y-4">
           <div className="rounded-lg border p-4">
-            <h3 className="mb-4 text-lg font-medium">Swap Tokens</h3>
-            <Select
-              className="h-16 text-2xl"
-              value={selectedToken?.address ?? ''}
-              onValueChange={(value) => {
-                const token = availableTokens.find((t) => t.address === value);
-                setSelectedToken(token ?? null);
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select token">
-                  <div className="flex items-center gap-2">
-                    {selectedToken.image && (
-                      <img
-                        src={selectedToken.image}
-                        alt={selectedToken.symbol}
-                        className="h-5 w-5 rounded-full"
-                      />
-                    )}
-                    <span>{selectedToken.symbol}</span>
-                  </div>
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={WETH_ADDRESS}>
-                  <div className="flex items-center gap-2">
-                    <img
-                      src={selectedToken.image}
-                      alt={selectedToken.symbol}
-                      className="h-5 w-5 rounded-full"
-                    />
-                    <span>{selectedToken.symbol}</span>
-                    <span className="text-sm text-gray-500">
-                      ({selectedToken.name})
-                    </span>
-                  </div>
-                </SelectItem>
-              </SelectContent>
-            </Select>
-
-            <div className="mt-4 space-y-4">
-              <Input
-                type="text"
-                placeholder={`Amount in ${selectedToken?.symbol ?? ''}`}
-                value={amount}
-                onChange={handleAmountChange}
-                className="h-16 text-2xl"
-                disabled={isLoading}
-              />
-              <Button
-                onClick={handleSwap}
-                disabled={isLoading || !amount || !selectedToken}
-                className="h-16 w-full text-xl"
-              >
-                {isLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <>
-                    Swap Tokens <ArrowRight className="ml-2 h-4 w-4" />
-                  </>
-                )}
-              </Button>
-            </div>
+            <SwapDefault from={availableTokens} to={[WETH_TOKEN]} />
           </div>
         </TabsContent>
       </Tabs>
