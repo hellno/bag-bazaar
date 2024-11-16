@@ -6,6 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Loader2, ArrowRight, Wallet } from 'lucide-react';
 import { parseEther, formatEther } from 'viem';
 import { useBalance, useWalletClient } from 'wagmi';
+import { Web3Like } from '@1inch/cross-chain-sdk';
+import type { TransactionConfig } from 'web3-core';
 import {
   Select,
   SelectContent,
@@ -201,12 +203,37 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
       const blockchainProvider = new PrivateKeyProviderConnector(
         process.env.NEXT_PUBLIC_SIGNER_PRIVATE_KEY!,
         {
+          eth: {
+            async call(transactionConfig: TransactionConfig): Promise<string> {
+              if (!walletClient) throw new Error('Wallet client not available');
+              
+              const result = await walletClient.request({
+                method: 'eth_call',
+                params: [
+                  {
+                    to: transactionConfig.to,
+                    data: transactionConfig.data,
+                    value: transactionConfig.value,
+                    from: transactionConfig.from,
+                    gas: transactionConfig.gas,
+                    gasPrice: transactionConfig.gasPrice
+                  },
+                  'latest'
+                ]
+              });
+              
+              return result as string;
+            }
+          },
+          extend(extension: unknown) {
+            return this;
+          },
           sendTransaction: async (tx) => {
             if (!walletClient) throw new Error('Wallet client not available');
 
             return await walletClient.sendTransaction({
               to: tx.to as `0x${string}`,
-              data: tx.data as `0x${string}`,
+              data: tx.data as `0x${string}`, 
               value: BigInt(tx.value || 0),
               chainId: Number(tx.chainId)
             });
@@ -218,7 +245,7 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
               message
             });
           }
-        }
+        } as Web3Like
       );
 
       const sdk = new SDK({
