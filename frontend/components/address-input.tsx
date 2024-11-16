@@ -8,7 +8,7 @@ import { Button } from './ui/button';
 
 interface AddressInputProps {
   value: string;
-  onChange: (value: string, resolvedAddress?: string, isValid: boolean) => void;
+  onChange: (value: string, isValid: boolean, resolvedAddress?: string) => void;
   onRemove?: () => void;
   label?: string;
   showRemoveButton?: boolean;
@@ -76,7 +76,7 @@ export function AddressInput({
     }
 
     setResolvedData(newResolvedData);
-    onChange(input, newResolvedData.resolvedAddress, newResolvedData.isValid);
+    onChange(input, newResolvedData.isValid, newResolvedData.resolvedAddress);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {

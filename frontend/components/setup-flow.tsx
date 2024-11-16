@@ -213,7 +213,7 @@ export default function Component() {
                 <AddressInput
                   key={`address-input-${index}-${entries.length}`}
                   value={entry.input}
-                  onChange={(value, resolvedAddress, isValid) =>
+                  onChange={(value, isValid, resolvedAddress) =>
                     updateEntry(index, value, resolvedAddress, isValid)
                   }
                   onRemove={
