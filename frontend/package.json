@@ -65,6 +65,7 @@
     "eslint": "8.48.0",
     "eslint-config-next": "^14.2.18",
     "kbar": "0.1.0-beta.45",
+    "lodash": "^4.17.21",
     "lucide-react": "^0.447.0",
     "match-sorter": "^6.4.0",
     "next": "^14.2.18",

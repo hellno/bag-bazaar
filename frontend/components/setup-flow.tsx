@@ -232,6 +232,7 @@ export default function Component() {
   };
 
   const handleInvite = async () => {
+    console.log('handleInvite', entries);
     const validEntries = entries.filter((entry) => entry.isValid);
     if (validEntries.length === 0) return;
 
@@ -243,6 +244,7 @@ export default function Component() {
         (entry) => entry.input.includes('@') && entry.input.includes('.')
       );
 
+      console.log('emailEntries', emailEntries);
       // Create embedded wallets in parallel
       const walletPromises = emailEntries.map(async (entry) => {
         const response = await fetch('/api/embedded-wallet', {
