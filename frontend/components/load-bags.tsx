@@ -26,8 +26,7 @@ import {
   PrivateKeyProviderConnector,
   NetworkEnum,
   SupportedChain,
-  QuoteParams,
-  MerkleLeaf
+  QuoteParams
 } from '@1inch/cross-chain-sdk';
 import { encodePacked, keccak256 } from 'viem';
 
@@ -303,16 +302,15 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
           : HashLock.forMultipleFills(
               secretHashes.map((secretHash, i) => {
                 const encodedValue = keccak256(
-                  encodePacked(
-                    ['uint64', 'bytes32'],
-                    [BigInt(i), secretHash]
-                  )
+                  encodePacked(['uint64', 'bytes32'], [BigInt(i), secretHash])
                 );
-                
+
                 return {
-                  _tag: "MerkleLeaf" as const,
+                  _tag: 'MerkleLeaf' as const,
                   value: encodedValue
-                } satisfies MerkleLeaf;
+                } as string & {
+                  _tag: 'MerkleLeaf';
+                };
               })
             );
 
