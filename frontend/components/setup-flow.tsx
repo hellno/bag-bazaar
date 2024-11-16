@@ -13,8 +13,25 @@ import {
   ArrowRight
 } from 'lucide-react';
 import { useAddress, useName } from '@coinbase/onchainkit/identity';
-import Safe, { SafeAccountConfig } from '@safe-global/protocol-kit';
 import { baseSepolia } from 'viem/chains';
+import { createPublicClient, http, parseEther, privateKeyToAccount } from 'viem';
+import { createPimlicoClient } from 'permissionless/clients/pimlico';
+import { entryPoint07Address } from 'viem/account-abstraction';
+import { toSafeSmartAccount } from 'permissionless/accounts';
+import { createSmartAccountClient } from 'permissionless';
+
+const publicClient = createPublicClient({
+  chain: baseSepolia,
+  transport: http("https://sepolia.base.org")
+});
+
+const paymasterClient = createPimlicoClient({
+  transport: http(`https://api.pimlico.io/v2/base-sepolia/rpc?apikey=${process.env.NEXT_PUBLIC_PIMLICO_API_KEY}`),
+  entryPoint: {
+    address: entryPoint07Address,
+    version: "0.7"
+  }
+});
 
 type Step = 'usernames' | 'processing' | 'verification' | 'completion';
 
@@ -74,57 +91,52 @@ export default function Component() {
       const ownerAddresses = validEntries
         .filter((entry) => entry.resolvedAddress)
         .map((entry) => entry.resolvedAddress as string);
-
+      
       console.log('Filtered owner addresses:', ownerAddresses);
 
-      const threshold = Math.ceil(ownerAddresses.length / 2);
-      console.log('Calculated threshold:', threshold);
+      // Create signer from private key
+      console.log('Creating signer from private key...');
+      const owner = privateKeyToAccount(process.env.NEXT_PUBLIC_SIGNER_PRIVATE_KEY as `0x${string}`);
+      console.log('Signer created');
 
-      const safeAccountConfig: SafeAccountConfig = {
-        owners: ownerAddresses,
-        threshold
-      };
-      console.log('Safe account config:', safeAccountConfig);
-
-      console.log(
-        'Initializing Safe with RPC URL:',
-        baseSepolia.rpcUrls.default.http[0]
-      );
-      const protocolKit = await Safe.init({
-        provider: baseSepolia.rpcUrls.default.http[0],
-        signer: process.env.SIGNER_PRIVATE_KEY!,
-        predictedSafe: {
-          safeAccountConfig
-        }
+      // Create Safe Account
+      console.log('Creating Safe account...');
+      const safeAccount = await toSafeSmartAccount({
+        client: publicClient,
+        entryPoint: {
+          address: entryPoint07Address,
+          version: "0.7",
+        },
+        owners: [owner, ...ownerAddresses.map(addr => ({ address: addr }))],
+        threshold: Math.ceil((ownerAddresses.length + 1) / 2), // Including the deployer
+        saltNonce: BigInt(Date.now()), // Use timestamp as nonce for uniqueness
+        version: "1.4.1"
       });
-      console.log('Protocol Kit initialized');
+      console.log('Safe account created with config:', safeAccount);
 
-      console.log('Creating Safe deployment transaction...');
-      const deploymentTransaction =
-        await protocolKit.createSafeDeploymentTransaction();
-      console.log('Deployment transaction created:', deploymentTransaction);
-
-      console.log('Getting external signer...');
-      const client = await protocolKit.getSafeProvider().getExternalSigner();
-      console.log('External signer obtained');
-
-      console.log('Sending deployment transaction...');
-      const transactionHash = await client.sendTransaction({
-        to: deploymentTransaction.to,
-        value: BigInt(deploymentTransaction.value),
-        data: deploymentTransaction.data as `0x${string}`,
-        chain: sepolia
+      // Create Smart Account Client
+      console.log('Creating smart account client...');
+      const smartAccountClient = createSmartAccountClient({
+        account: safeAccount,
+        chain: baseSepolia,
+        paymaster: paymasterClient, 
+        bundlerTransport: http(`https://api.pimlico.io/v2/base-sepolia/rpc?apikey=${process.env.NEXT_PUBLIC_PIMLICO_API_KEY}`),
+        userOperation: {
+          estimateFeesPerGas: async () => (await paymasterClient.getUserOperationGasPrice()).fast,
+        },
       });
-      console.log('Transaction hash:', transactionHash);
+      console.log('Smart account client created');
 
-      console.log('Waiting for transaction receipt...');
-      const transactionReceipt = await client.waitForTransactionReceipt({
-        hash: transactionHash
+      // Deploy the Safe
+      console.log('Deploying Safe...');
+      const initTx = await smartAccountClient.sendTransaction({
+        to: await safeAccount.getAddress(),
+        data: "0x",
+        value: 0n
       });
-      console.log('Transaction receipt:', transactionReceipt);
+      console.log('Safe deployed with transaction:', initTx);
 
-      console.log('Getting Safe address...');
-      const safeAddress = await protocolKit.getAddress();
+      const safeAddress = await safeAccount.getAddress();
       console.log('Safe deployed at address:', safeAddress);
 
       setSafeDeploymentStatus({
