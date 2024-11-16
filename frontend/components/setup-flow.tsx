@@ -26,8 +26,8 @@ interface SafeDeploymentStatus {
 
 interface InviteEntry {
   input: string;
-  resolvedAddress?: string;
-  resolvedName?: string;
+  resolvedAddress?: string;  // The EVM address
+  resolvedName?: string;     // The ENS name (if resolved from address)
   isValid: boolean;
   isLoading: boolean;
 }
@@ -47,16 +47,16 @@ export default function Component() {
     const entry = newEntries[index];
     entry.input = input;
     entry.isLoading = true;
-
+    
     // Reset previous resolutions
     entry.resolvedAddress = undefined;
     entry.resolvedName = undefined;
-
+    
     // Check if it's an ETH address
     const isEthAddress = /^0x[a-fA-F0-9]{40}$/.test(input);
     // Check if it's an ENS name
     const isEns = input.toLowerCase().endsWith('.eth');
-
+    
     try {
       if (isEthAddress) {
         const { data: name, isLoading } = await useName({ address: input });
@@ -75,7 +75,7 @@ export default function Component() {
       console.error('Error resolving address/name:', error);
       entry.isValid = false;
     }
-
+    
     entry.isLoading = false;
     setEntries(newEntries);
   };
@@ -205,9 +205,9 @@ export default function Component() {
                   )}
                   {entry.isValid && (
                     <div className="text-sm text-green-600">
-                      {entry.resolvedAddress &&
-                        `Address: ${entry.resolvedAddress}`}
-                      {entry.resolvedName && ` (${entry.resolvedName})`}
+                      {entry.resolvedAddress && `Address: ${entry.resolvedAddress}`}
+                      {entry.resolvedName && entry.resolvedName !== entry.input && 
+                        ` (${entry.resolvedName})`}
                     </div>
                   )}
                 </div>
