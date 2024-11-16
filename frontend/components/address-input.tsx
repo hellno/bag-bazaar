@@ -14,6 +14,9 @@ interface AddressInputProps {
   showRemoveButton?: boolean;
 }
 
+// Email validation regex
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 interface ResolvedData {
   resolvedAddress?: string;
   resolvedName?: string;
@@ -40,7 +43,7 @@ export function AddressInput({
     name: input
   });
 
-  const isLoading = isLoadingName || isLoadingAddress;
+  const isLoading = isLoadingName || isLoadingAddress || isResolvingEmail;
 
   useEffect(() => {
     validateAndResolveEntry();
@@ -56,6 +59,7 @@ export function AddressInput({
 
     const isEthAddress = /^0x[a-fA-F0-9]{40}$/.test(input);
     const isEns = input.toLowerCase().endsWith('.eth');
+    const isEmail = EMAIL_REGEX.test(input);
 
     let newResolvedData: ResolvedData = {
       isValid: false
@@ -73,6 +77,15 @@ export function AddressInput({
         resolvedName: input,
         isValid: true
       };
+    } else if (isEmail) {
+      const emailWalletAddress = await resolveEmailToAddress(input);
+      if (emailWalletAddress) {
+        newResolvedData = {
+          resolvedAddress: emailWalletAddress,
+          resolvedName: input, // Use email as the display name
+          isValid: true
+        };
+      }
     }
 
     setResolvedData(newResolvedData);
@@ -92,7 +105,7 @@ export function AddressInput({
       <div className="flex items-center gap-4">
         <Input
           type="text"
-          placeholder="0x... or name.eth"
+          placeholder="0x... or name.eth or email@example.com"
           value={input}
           onChange={handleInputChange}
           className={`w-full rounded-lg p-6 text-3xl ${
@@ -108,7 +121,7 @@ export function AddressInput({
       {isLoading && (
         <div className="flex items-center gap-2 text-sm text-gray-500">
           <Loader2 className="h-4 w-4 animate-spin" />
-          Resolving...
+          {isResolvingEmail ? 'Creating wallet...' : 'Resolving...'}
         </div>
       )}
       {resolvedData.isValid && (
