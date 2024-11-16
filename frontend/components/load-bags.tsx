@@ -92,7 +92,7 @@ const SUPPORTED_NETWORKS = {
         name: 'USD Coin'
       },
       WETH: {
-        address: '0x4200000000000000000000000000000006',
+        address: '0x4200000000000000000000000000000000000006',
         symbol: 'WETH',
         name: 'Wrapped Ethereum'
       }
@@ -116,7 +116,7 @@ const SUPPORTED_NETWORKS = {
       WETH: {
         symbol: 'WETH',
         name: 'Wrapped Ethereum',
-        address: '0x4200000000000000000000000000000006'
+        address: '0x4200000000000000000000000000000000000006'
       }
     }
   },
