@@ -165,18 +165,21 @@ export default function Component() {
 
       return safeAddress;
     } catch (error) {
-      console.error('Error deploying Safe:', error);
+      // Type guard to ensure error is an Error object
+      const err = error as Error;
+      
+      console.error('Error deploying Safe:', err);
       console.error('Error details:', {
-        name: error.name,
-        message: error.message,
-        stack: error.stack
+        name: err.name,
+        message: err.message,
+        stack: err.stack
       });
 
       setSafeDeploymentStatus({
         isDeploying: false,
-        error: `Failed to deploy Safe: ${error.message}`
+        error: `Failed to deploy Safe: ${err.message}`
       });
-      throw error;
+      throw err;
     }
   };
 
