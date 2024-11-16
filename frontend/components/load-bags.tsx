@@ -28,8 +28,13 @@ function getRandomBytes32(): string {
   return '0x' + Array.from(array).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
+// Type guard for network validation
+function isValidNetwork(chain: number): chain is keyof typeof SUPPORTED_NETWORKS {
+  return chain in SUPPORTED_NETWORKS;
+}
+
 const SUPPORTED_NETWORKS = {
-  [NetworkEnum.ARBITRUM]: {
+  [NetworkEnum.ARBITRUM]: {  // 42161
     name: 'Arbitrum',
     tokens: {
       USDC: {
@@ -44,7 +49,7 @@ const SUPPORTED_NETWORKS = {
       }
     }
   },
-  [NetworkEnum.COINBASE]: {
+  [NetworkEnum.COINBASE]: {  // 8453
     name: 'Base',
     tokens: {
       ETH: {
@@ -58,13 +63,13 @@ const SUPPORTED_NETWORKS = {
         name: 'USD Coin'
       },
       WETH: {
-        address: '0x4200000000000000000000000000000000000006',
+        address: '0x4200000000000000000000000000000006',
         symbol: 'WETH',
         name: 'Wrapped Ethereum'
       }
     }
   },
-  [NetworkEnum.ETHEREUM]: {
+  [NetworkEnum.ETHEREUM]: {  // 1
     name: 'Ethereum',
     tokens: {
       WETH: {
@@ -74,17 +79,17 @@ const SUPPORTED_NETWORKS = {
       }
     }
   },
-  [NetworkEnum.OPTIMISM]: {
+  [NetworkEnum.OPTIMISM]: {  // 10
     name: 'OP Mainnet',
     tokens: {
       WETH: {
         symbol: 'WETH',
         name: 'Wrapped Ethereum',
-        address: '0x4200000000000000000000000000000000000006'
+        address: '0x4200000000000000000000000000000006'
       }
     }
   },
-  [NetworkEnum.GNOSIS]: {
+  [NetworkEnum.GNOSIS]: {  // 100
     name: 'Gnosis',
     tokens: {
       WETH: {
@@ -94,7 +99,7 @@ const SUPPORTED_NETWORKS = {
       }
     }
   }
-};
+} as const;
 
 interface LoadBagsProps {
   safeAddress: string;
@@ -116,8 +121,9 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
     token:
       selectedToken === 'ETH'
         ? undefined
-        : (SUPPORTED_NETWORKS[sourceChain].tokens[selectedToken]
-            .address as `0x${string}`),
+        : (isValidNetwork(sourceChain)
+            ? SUPPORTED_NETWORKS[sourceChain].tokens[selectedToken].address as `0x${string}`
+            : undefined),
     chainId: sourceChain,
     watch: true
   });
