@@ -13,6 +13,7 @@ import {
   CardTitle
 } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import SetupFlow from '@/components/setup-flow';
 
 export default function OverViewPage() {
   return (
@@ -26,6 +27,8 @@ export default function OverViewPage() {
             you are cool
           </div>
         </div>
+        <SetupFlow />
+
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

@@ -1,4 +1,6 @@
 import '@coinbase/onchainkit/styles.css';
+import '@rainbow-me/rainbowkit/styles.css';
+
 import { auth } from '@/auth';
 import Providers from '@/components/layout/providers';
 import { Toaster } from '@/components/ui/sonner';
