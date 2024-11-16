@@ -113,8 +113,7 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
       try {
         setIsLoadingTokens(true);
         const tokens = await getTokens({
-          limit: '20',
-          chainId: base.id.toString()
+          limit: '20'
         });
         setAvailableTokens(tokens);
         if (tokens.length > 0) {
@@ -283,9 +282,13 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
       </div>
 
       <Tabs defaultValue="send" className="mt-12 w-full">
-        <TabsList className="h-12 text-2xl grid w-full grid-cols-2">
-          <TabsTrigger className="text-xl" value="send">Send to shared bag</TabsTrigger>
-          <TabsTrigger className="text-xl" value="swap">Swap tokens</TabsTrigger>
+        <TabsList className="grid h-12 w-full grid-cols-2 text-2xl">
+          <TabsTrigger className="text-xl" value="send">
+            Send to shared bag
+          </TabsTrigger>
+          <TabsTrigger className="text-xl" value="swap">
+            Swap tokens
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="send" className="space-y-4">
