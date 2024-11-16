@@ -10,7 +10,7 @@ import { base, baseSepolia, mainnet, sepolia } from 'viem/chains';
 
 const TOKEN_FACTORY_ADDRESSES: { [chainId: number]: `0x${string}` } = {
   [base.id]: '0x250c9FB2b411B48273f69879007803790A6AeA47',
-  [baseSepolia.id]: '0x0000000000000000000000000000000000000000',
+  [baseSepolia.id]: '0x928073CC726e717b4C4f6a596198c4374266aEbe',
   [mainnet.id]: '0x0000000000000000000000000000000000000000',
   [sepolia.id]: '0x0000000000000000000000000000000000000000'
 } as const;
@@ -45,11 +45,17 @@ const TOKEN_FACTORY_ABI = [
 ] as const;
 
 interface TokenCreationFormProps {
-  onSubmit: (tokenName: string, tokenTicker: string) => void;
+  deployer: `0x${string}`;
+  onSubmit: (
+    tokenName: string,
+    tokenTicker: string,
+    hash: `0x${string}`
+  ) => void;
   isLoading?: boolean;
 }
 
 export function TokenCreationForm({
+  deployer,
   onSubmit,
   isLoading: externalLoading
 }: TokenCreationFormProps) {
@@ -59,14 +65,14 @@ export function TokenCreationForm({
 
   const { writeContractAsync, isPending: isContractWritePending } =
     useWriteContract();
-  const { chain } = useAccount();
+  const { chain, address } = useAccount();
   const { chains } = useConfig();
-
+  console.log('chain', chain, 'address', address, 'chains', chains);
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
-    if (!chain) {
+    if (!chain || !address) {
       setError('Please connect your wallet to continue');
       return;
     }
@@ -78,8 +84,8 @@ export function TokenCreationForm({
         supply: parseEther('1000000000'), // 1 billion tokens with 18 decimals
         initialTick: -207400n,
         fee: 10000,
-        salt: '0x0000000000000000000000000000000000000000000000000000000000000000' as `0x${string}`,
-        deployer: '0xC2C0CfE4df39eB89e77F232cc0354731B37157C8' as `0x${string}`
+        salt: '0x100000000000000000000000000000000000000000000000000000000000000e' as `0x${string}`,
+        deployer: address
       };
 
       const tx = await writeContractAsync({
@@ -97,7 +103,7 @@ export function TokenCreationForm({
         ]
       });
 
-      onSubmit(tokenName, tokenTicker);
+      onSubmit(tokenName, tokenTicker, tx);
     } catch (error) {
       console.error('Error deploying token:', error);
       setError(
@@ -111,7 +117,7 @@ export function TokenCreationForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
       <div className="space-y-4">
-        <label className="block text-xl font-medium text-gray-700">
+        <label className="block text-xl font-medium text-foreground">
           Token Name
           <Input
             type="text"
@@ -128,7 +134,7 @@ export function TokenCreationForm({
       </div>
 
       <div className="space-y-4">
-        <label className="block text-xl font-medium text-gray-700">
+        <label className="block text-xl font-medium text-foreground">
           Token Symbol
           <Input
             type="text"
