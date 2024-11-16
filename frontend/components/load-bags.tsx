@@ -4,7 +4,8 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Loader2, ArrowRight, Wallet } from 'lucide-react';
+import { Loader2, ArrowRight, Wallet, Send } from 'lucide-react';
+import { useWriteContract } from 'wagmi';
 import { buildSwapTransaction, getTokens } from '@coinbase/onchainkit/api';
 import type { Token } from '@coinbase/onchainkit/token';
 import {
@@ -12,8 +13,22 @@ import {
   formatEther,
   createPublicClient,
   http,
-  formatUnits
+  formatUnits,
+  parseUnits
 } from 'viem';
+
+const ERC20_ABI = [
+  {
+    name: 'transfer',
+    type: 'function',
+    stateMutability: 'nonpayable',
+    inputs: [
+      { name: 'recipient', type: 'address' },
+      { name: 'amount', type: 'uint256' }
+    ],
+    outputs: [{ name: '', type: 'bool' }]
+  }
+] as const;
 import { baseSepolia } from 'viem/chains';
 import { useBalance, useWalletClient } from 'wagmi';
 
@@ -95,6 +110,36 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
   const { data: walletBalance } = useBalance({
     address: walletClient?.account.address
   });
+
+  const { writeContract } = useWriteContract();
+
+  const handleSendToken = async () => {
+    if (!selectedToken || !amount || !safeAddress) {
+      setError('Missing required parameters');
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const parsedAmount = parseUnits(amount, selectedToken.decimals);
+      
+      await writeContract({
+        abi: ERC20_ABI,
+        address: selectedToken.address as `0x${string}`,
+        functionName: 'transfer',
+        args: [safeAddress as `0x${string}`, parsedAmount]
+      });
+
+      onSuccess?.();
+    } catch (err) {
+      console.error('Send token error:', err);
+      setError(err instanceof Error ? err.message : 'Failed to send token');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleSwap = async () => {
     if (!walletClient || !amount || !safeAddress) {
@@ -231,25 +276,41 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
         <div className="flex gap-4">
           <Input
             type="text"
-            placeholder={`Amount in ${selectedToken.name}`}
+            placeholder={`Amount in ${selectedToken?.symbol ?? ''}`}
             value={amount}
             onChange={handleAmountChange}
             className="text-xl"
             disabled={isLoading}
           />
-          <Button
-            onClick={handleSwap}
-            disabled={isLoading || !amount}
-            className="min-w-[120px]"
-          >
-            {isLoading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <>
-                Send <ArrowRight className="ml-2 h-4 w-4" />
-              </>
-            )}
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              onClick={handleSwap}
+              disabled={isLoading || !amount || !selectedToken}
+              className="min-w-[120px]"
+            >
+              {isLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <>
+                  Swap <ArrowRight className="ml-2 h-4 w-4" />
+                </>
+              )}
+            </Button>
+            <Button
+              onClick={handleSendToken}
+              disabled={isLoading || !amount || !selectedToken}
+              variant="secondary"
+              className="min-w-[120px]"
+            >
+              {isLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <>
+                  Send <Send className="ml-2 h-4 w-4" />
+                </>
+              )}
+            </Button>
+          </div>
         </div>
 
         {error && <p className="text-sm text-red-500">{error}</p>}
