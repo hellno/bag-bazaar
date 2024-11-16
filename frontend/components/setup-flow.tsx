@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { LoadBags } from '@/components/load-bags';
 import { Button } from '@/components/ui/button';
 import { AddressInput } from '@/components/address-input';
 import {
@@ -288,18 +289,18 @@ export default function Component() {
             <h2 className="text-4xl font-bold">Bags are ready! 🎒</h2>
             <div className="rounded-lg bg-gray-50 p-6">
               <p className="mb-4 text-xl text-gray-600">
-                Prepare your bags to get started
+                Load your bags to get started
               </p>
-              <div className="mb-4 font-mono text-sm">
-                onchain address {safeDeploymentStatus.safeAddress}
+              <div className="mb-6 font-mono text-sm">
+                Safe Address: {safeDeploymentStatus.safeAddress}
               </div>
-              <p>show value in safe here, via 1inch integration</p>
-              <Button
-                onClick={() => setCurrentStep('token-creation')}
-                className="flex w-full items-center justify-center gap-2 p-6 text-xl"
-              >
-                Create tokens <ArrowRight className="h-6 w-6" />
-              </Button>
+              
+              {safeDeploymentStatus.safeAddress && (
+                <LoadBags 
+                  safeAddress={safeDeploymentStatus.safeAddress}
+                  onSuccess={() => setCurrentStep('token-creation')}
+                />
+              )}
             </div>
           </div>
         );
