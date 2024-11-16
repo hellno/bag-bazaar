@@ -90,6 +90,10 @@ contract SocialDexDeployer is Ownable {
 
         require(address(token) < weth, "Invalid salt");
         require(_supply >= _supply, "Invalid supply amount");
+        uint256 creatorAmt = (_supply * protocolCut) / 1000;
+        uint256 remainder = _supply - creatorAmt;
+        // tx to the creator the same share of protocolcut
+        token.transfer(_deployer, creatorAmt);
 
         uint160 sqrtPriceX96 = _initialTick.getSqrtRatioAtTick();
         address pool = uniswapV3Factory.createPool(address(token), weth, _fee);
@@ -102,7 +106,7 @@ contract SocialDexDeployer is Ownable {
                 _fee,
                 _initialTick,
                 maxUsableTick(tickSpacing),
-                _supply,
+            remainder,
                 0,
                 0,
                 0,
@@ -110,7 +114,7 @@ contract SocialDexDeployer is Ownable {
                 block.timestamp
             );
 
-        token.approve(address(positionManager), _supply);
+        token.approve(address(positionManager), remainder);
         (tokenId, , , ) = positionManager.mint(params);
 
         address lockerAddress = liquidityLocker.deploy(
