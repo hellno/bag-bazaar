@@ -211,25 +211,21 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
             async call(transactionConfig: {
               data?: string;
               to?: string;
+              value?: bigint;
+              from?: string;
+              gas?: bigint;
+              gasPrice?: bigint;
             }): Promise<string> {
               if (!walletClient) throw new Error('Wallet client not available');
-
-              const result = await walletClient.request({
-                method: 'eth_call',
-                params: [
-                  {
-                    to: transactionConfig.to,
-                    data: transactionConfig.data,
-                    value: transactionConfig.value,
-                    from: transactionConfig.from,
-                    gas: transactionConfig.gas,
-                    gasPrice: transactionConfig.gasPrice
-                  },
-                  'latest'
-                ]
+              
+              const result = await publicClient.call({
+                to: transactionConfig.to as `0x${string}`,
+                data: transactionConfig.data as `0x${string}`,
+                value: BigInt(transactionConfig.value || 0),
+                account: walletClient.account.address
               });
-
-              return result as string;
+              
+              return result.data as string;
             }
           },
           extend(extension: unknown) {
