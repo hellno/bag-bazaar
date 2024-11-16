@@ -7,7 +7,7 @@ import {
   PlusCircle,
   UserPlus,
   Send,
-  X,
+  CirclePlus,
   Loader2,
   CheckCircle2,
   ArrowRight
@@ -69,14 +69,14 @@ export default function Component() {
   const deploySafe = async (validEntries: InviteEntry[]) => {
     console.log('Starting Safe deployment with entries:', validEntries);
     setSafeDeploymentStatus({ isDeploying: true });
-    
+
     try {
       const ownerAddresses = validEntries
         .filter((entry) => entry.resolvedAddress)
         .map((entry) => entry.resolvedAddress as string);
-      
+
       console.log('Filtered owner addresses:', ownerAddresses);
-      
+
       const threshold = Math.ceil(ownerAddresses.length / 2);
       console.log('Calculated threshold:', threshold);
 
@@ -86,10 +86,13 @@ export default function Component() {
       };
       console.log('Safe account config:', safeAccountConfig);
 
-      console.log('Initializing Safe with RPC URL:', baseSepolia.rpcUrls.default.http[0]);
+      console.log(
+        'Initializing Safe with RPC URL:',
+        baseSepolia.rpcUrls.default.http[0]
+      );
       const protocolKit = await Safe.init({
         provider: baseSepolia.rpcUrls.default.http[0],
-        signer: window.ethereum,
+        signer: process.env.SIGNER_PRIVATE_KEY!,
         predictedSafe: {
           safeAccountConfig
         }
@@ -97,7 +100,8 @@ export default function Component() {
       console.log('Protocol Kit initialized');
 
       console.log('Creating Safe deployment transaction...');
-      const deploymentTransaction = await protocolKit.createSafeDeploymentTransaction();
+      const deploymentTransaction =
+        await protocolKit.createSafeDeploymentTransaction();
       console.log('Deployment transaction created:', deploymentTransaction);
 
       console.log('Getting external signer...');
@@ -136,7 +140,7 @@ export default function Component() {
         message: error.message,
         stack: error.stack
       });
-      
+
       setSafeDeploymentStatus({
         isDeploying: false,
         error: `Failed to deploy Safe: ${error.message}`
@@ -201,7 +205,7 @@ export default function Component() {
               disabled={!entries.some((entry) => entry.isValid)}
               className="flex w-full items-center justify-center gap-4 rounded-lg bg-blue-600 p-8 text-3xl font-bold text-white hover:bg-blue-700 disabled:opacity-50"
             >
-              <Send className="h-8 w-8" />
+              <CirclePlus className="h-8 w-8" />
               Create shared bag
             </Button>
           </>
