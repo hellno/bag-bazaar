@@ -329,6 +329,11 @@ export default function Component() {
         );
 
       case 'token-pending':
+        useEffect(() => {
+          const timer = setTimeout(() => setCurrentStep('token-success'), 3000);
+          return () => clearTimeout(timer);
+        }, []);
+
         return (
           <div className="space-y-6 text-center">
             <h2 className="text-4xl font-bold">Creating Tokens...</h2>
@@ -338,6 +343,14 @@ export default function Component() {
             <p className="text-xl text-gray-600">
               Please wait while we create your tokens
             </p>
+            {/* Add the placeholder button */}
+            <Button
+              onClick={() => setCurrentStep('token-success')}
+              variant="outline"
+              className="mt-4"
+            >
+              Skip waiting (dev only)
+            </Button>
           </div>
         );
 
