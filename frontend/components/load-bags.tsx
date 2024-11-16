@@ -273,9 +273,9 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
       const dstToken =
         SUPPORTED_NETWORKS[NetworkEnum.COINBASE].tokens[selectedToken];
 
-      const params = {
-        srcChainId: sourceChain,
-        dstChainId: NetworkEnum.COINBASE,
+      const params: QuoteParams = {
+        srcChainId: Number(sourceChain) as SupportedChain,
+        dstChainId: Number(NetworkEnum.COINBASE) as SupportedChain,
         srcTokenAddress: srcToken.address,
         dstTokenAddress: dstToken.address,
         amount: parseEther(amount).toString(),
