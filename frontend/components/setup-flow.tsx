@@ -27,27 +27,29 @@ interface SafeDeploymentStatus {
 interface InviteEntry {
   input: string;
   resolvedAddress?: string;
+  isValid: boolean;
 }
 
 export default function Component() {
   const [currentStep, setCurrentStep] = useState<Step>('usernames');
-  const [entries, setEntries] = useState<InviteEntry[]>([{ input: '' }]);
+  const [entries, setEntries] = useState<InviteEntry[]>([{ input: '', isValid: false }]);
   const [safeDeploymentStatus, setSafeDeploymentStatus] =
     useState<SafeDeploymentStatus>({
       isDeploying: false
     });
 
   const addEntry = () => {
-    setEntries([...entries, { input: '' }]);
+    setEntries([...entries, { input: '', isValid: false }]);
   };
 
   const updateEntry = (
     index: number,
     input: string,
-    resolvedAddress?: string
+    resolvedAddress?: string,
+    isValid: boolean
   ) => {
     const newEntries = [...entries];
-    newEntries[index] = { input, resolvedAddress };
+    newEntries[index] = { input, resolvedAddress, isValid };
     setEntries(newEntries);
   };
 
@@ -147,8 +149,8 @@ export default function Component() {
                 <AddressInput
                   key={`address-input-${index}-${entries.length}`}
                   value={entry.input}
-                  onChange={(value, resolvedAddress) =>
-                    updateEntry(index, value, resolvedAddress)
+                  onChange={(value, resolvedAddress, isValid) =>
+                    updateEntry(index, value, resolvedAddress, isValid)
                   }
                   onRemove={
                     entries.length > 1 ? () => removeEntry(index) : undefined
