@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTransactionReceipt } from 'wagmi';
 import { LoadBags } from '@/components/load-bags';
 import { Button } from '@/components/ui/button';
 import { TokenCreationForm } from '@/components/token-creation-form';
@@ -72,6 +73,42 @@ export default function Component() {
       isDeploying: false,
       safeAddress: '0x06B03d36d8f1A9DB0a94d2024EFC1b1FE2C59770'
     });
+  const [tokenCreationTxHash, setTokenCreationTxHash] = useState<`0x${string}` | undefined>();
+  const [error, setError] = useState<string | null>(null);
+
+  const { 
+    data: txReceipt,
+    isSuccess: isTxSuccess,
+    isPending: isTxPending,
+    isError: isTxError
+  } = useTransactionReceipt({
+    hash: tokenCreationTxHash,
+    enabled: !!tokenCreationTxHash,
+  });
+
+  useEffect(() => {
+    if (isTxSuccess && txReceipt) {
+      try {
+        const tokenDeploymentLog = txReceipt.logs[0];
+        if (tokenDeploymentLog) {
+          setSafeDeploymentStatus(prev => ({
+            ...prev,
+            tokenAddress: tokenDeploymentLog.address
+          }));
+          setCurrentStep('token-success');
+          setError(null);
+        } else {
+          throw new Error('Could not find token deployment event in transaction logs');
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to process transaction receipt');
+        setCurrentStep('token-creation');
+      }
+    } else if (isTxError) {
+      setError('Transaction failed. Please try again.');
+      setCurrentStep('token-creation');
+    }
+  }, [isTxSuccess, isTxError, txReceipt]);
 
   const addEntry = () => {
     setEntries([...entries, { input: '', isValid: false }]);
@@ -346,17 +383,34 @@ export default function Component() {
             <div className="flex justify-center">
               <Loader2 className="h-16 w-16 animate-spin text-blue-600" />
             </div>
+            {tokenCreationTxHash && (
+              <div className="text-sm text-gray-600">
+                <BlockscoutLink
+                  address={tokenCreationTxHash}
+                  type="tx"
+                  className="font-mono"
+                />
+              </div>
+            )}
             <p className="text-xl text-gray-600">
-              Please wait while we create your tokens
+              {isTxPending 
+                ? "Waiting for transaction confirmation..." 
+                : "Preparing your tokens..."}
             </p>
-            {/* Add the placeholder button */}
-            <Button
-              onClick={() => setCurrentStep('token-success')}
-              variant="outline"
-              className="mt-4"
-            >
-              Skip waiting (dev only)
-            </Button>
+            {error && (
+              <p className="text-red-500 mt-4">
+                {error}
+              </p>
+            )}
+            {process.env.NODE_ENV === 'development' && (
+              <Button
+                onClick={() => setCurrentStep('token-success')}
+                variant="outline"
+                className="mt-4"
+              >
+                Skip waiting (dev only)
+              </Button>
+            )}
           </div>
         );
 
