@@ -20,14 +20,8 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select';
-import {
-  SDK,
-  HashLock,
-  PrivateKeyProviderConnector,
-  NetworkEnum,
-  SupportedChain,
-  QuoteParams
-} from '@1inch/cross-chain-sdk';
+import { buildSwapTransaction } from '@coinbase/onchainkit/api';
+import type { Token } from '@coinbase/onchainkit/token';
 import { encodePacked, keccak256 } from 'viem';
 
 // Helper function for random bytes generation using Web Crypto API

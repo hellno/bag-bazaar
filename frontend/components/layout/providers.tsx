@@ -3,7 +3,11 @@ import React from 'react';
 import ThemeProvider from './ThemeToggle/theme-provider';
 import { SessionProvider, SessionProviderProps } from 'next-auth/react';
 import { WagmiProvider } from 'wagmi';
-import { OnchainKitProvider } from '@coinbase/onchainkit';
+import { OnchainKitProvider, setOnchainKitConfig } from '@coinbase/onchainkit';
+
+setOnchainKitConfig({ 
+  apiKey: process.env.NEXT_PUBLIC_ONCHAINKIT_API_KEY! 
+});
 import { getDefaultConfig, RainbowKitProvider } from '@rainbow-me/rainbowkit';
 import { mainnet, arbitrum, base } from 'wagmi/chains';
 import { QueryClientProvider, QueryClient } from '@tanstack/react-query';
