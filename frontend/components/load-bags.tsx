@@ -28,9 +28,19 @@ function getRandomBytes32(): string {
   return '0x' + Array.from(array).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-// Type guard for network validation
+// Type definitions for supported tokens and networks
+type SupportedToken = keyof (typeof SUPPORTED_NETWORKS)[NetworkEnum.ARBITRUM]['tokens'];
+
+// Type guards for validation
 function isValidNetwork(chain: number): chain is keyof typeof SUPPORTED_NETWORKS {
   return chain in SUPPORTED_NETWORKS;
+}
+
+function isValidToken(
+  network: keyof typeof SUPPORTED_NETWORKS,
+  token: string
+): token is keyof (typeof SUPPORTED_NETWORKS)[typeof network]['tokens'] {
+  return token in SUPPORTED_NETWORKS[network].tokens;
 }
 
 const SUPPORTED_NETWORKS = {
@@ -113,15 +123,15 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
   const [sourceChain, setSourceChain] = useState<NetworkEnum>(
     NetworkEnum.ARBITRUM
   );
-  const [selectedToken, setSelectedToken] = useState<string>('ETH');
+  const [selectedToken, setSelectedToken] = useState<SupportedToken>('ETH');
 
   const { data: walletClient } = useWalletClient();
   const { data: tokenBalance } = useBalance({
     address: walletClient?.account.address,
-    token:
+    token: 
       selectedToken === 'ETH'
         ? undefined
-        : (isValidNetwork(sourceChain)
+        : (isValidNetwork(sourceChain) && isValidToken(sourceChain, selectedToken)
             ? SUPPORTED_NETWORKS[sourceChain].tokens[selectedToken].address as `0x${string}`
             : undefined),
     chainId: sourceChain,
