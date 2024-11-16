@@ -1,13 +1,12 @@
 'use client';
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Loader2, ArrowRight, Wallet, Send } from 'lucide-react';
+import { Loader2, Wallet, Send } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useWriteContract } from 'wagmi';
-import { buildSwapTransaction, getTokens } from '@coinbase/onchainkit/api';
 import type { Token } from '@coinbase/onchainkit/token';
 import {
   parseEther,
@@ -64,41 +63,24 @@ interface LoadBagsProps {
 }
 
 export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
+  const WETH_ADDRESS = '0x4200000000000000000000000000000000000006';
+  const [selectedToken] = useState<Token>({
+    name: 'Wrapped ETH',
+    address: WETH_ADDRESS,
+    symbol: 'WETH',
+    decimals: 18,
+    chainId: base.id,
+    image: 'https://wallet-api-production.s3.amazonaws.com/uploads/tokens/weth_288.png'
+  });
+  
   const [amount, setAmount] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedToken, setSelectedToken] = useState<Token | null>(null);
-  const [availableTokens, setAvailableTokens] = useState<Token[]>([]);
-  const [isLoadingTokens, setIsLoadingTokens] = useState(true);
-  console.log('availabletokens', availableTokens);
-  // Fetch available tokens on component mount
-  useEffect(() => {
-    const fetchTokens = async () => {
-      try {
-        setIsLoadingTokens(true);
-        const tokens = await getTokens({
-          limit: '20',
-          chainId: base.id.toString()
-        });
-        setAvailableTokens(tokens);
-        if (tokens.length > 0) {
-          setSelectedToken(tokens[0]);
-        }
-      } catch (err) {
-        console.error('Failed to fetch tokens:', err);
-        setError('Failed to load available tokens');
-      } finally {
-        setIsLoadingTokens(false);
-      }
-    };
-
-    fetchTokens();
-  }, []);
 
   const { data: walletClient } = useWalletClient();
   const { data: tokenBalance } = useBalance({
     address: walletClient?.account.address,
-    token: selectedToken?.address as `0x${string}`,
+    token: WETH_ADDRESS as `0x${string}`,
     chainId: base.id
   });
 
@@ -230,82 +212,33 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
 
         <TabsContent value="send" className="space-y-4">
           <div className="rounded-lg border p-4">
-            <h3 className="mb-4 text-lg font-medium">Send Tokens to Safe</h3>
-            <Select
-              value={selectedToken?.address ?? ''}
-              onValueChange={(value) => {
-                const token = availableTokens.find((t) => t.address === value);
-                setSelectedToken(token ?? null);
-              }}
-              disabled={isLoadingTokens}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select token">
-                  {selectedToken ? (
-                    <div className="flex items-center gap-2">
-                      {selectedToken.image && (
-                        <img
-                          src={selectedToken.image}
-                          alt={selectedToken.symbol}
-                          className="h-5 w-5 rounded-full"
-                        />
-                      )}
-                      <span>{selectedToken.symbol}</span>
-                    </div>
-                  ) : (
-                    'Select token'
-                  )}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                {isLoadingTokens ? (
-                  <SelectItem value="loading" disabled>
-                    <div className="flex items-center gap-2">
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Loading tokens...
-                    </div>
-                  </SelectItem>
-                ) : (
-                  availableTokens.map((token) => (
-                    <SelectItem key={token.address} value={token.address}>
-                      <div className="flex items-center gap-2">
-                        {token.image && (
-                          <img
-                            src={token.image}
-                            alt={token.symbol}
-                            className="h-5 w-5 rounded-full"
-                          />
-                        )}
-                        <span>{token.symbol}</span>
-                        <span className="text-sm text-gray-500">
-                          ({token.name})
-                        </span>
-                      </div>
-                    </SelectItem>
-                  ))
-                )}
-              </SelectContent>
-            </Select>
+            <h3 className="mb-4 text-lg font-medium">Send WETH to Safe</h3>
+            
+            <div className="mb-4 flex items-center gap-2 text-sm text-gray-500">
+              <Wallet className="h-4 w-4" />
+              Balance: {tokenBalance ? `${formatEther(tokenBalance.value)} WETH` : '...'}
+            </div>
 
             <div className="mt-4 space-y-4">
               <Input
                 type="text"
-                placeholder={`Amount in ${selectedToken?.symbol ?? ''}`}
+                placeholder="Amount in WETH"
                 value={amount}
                 onChange={handleAmountChange}
-                className="text-xl"
+                className="h-16 text-2xl"
                 disabled={isLoading}
               />
+              
               <Button
                 onClick={handleSendToken}
-                disabled={isLoading || !amount || !selectedToken}
-                className="w-full"
+                disabled={isLoading || !amount}
+                className="h-16 w-full text-xl"
               >
                 {isLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Loader2 className="h-6 w-6 animate-spin" />
                 ) : (
                   <>
-                    Send to Safe <Send className="ml-2 h-4 w-4" />
+                    Send WETH to Safe <Send className="ml-2 h-6 w-6" />
                   </>
                 )}
               </Button>
