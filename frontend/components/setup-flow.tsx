@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -43,10 +43,12 @@ export default function Component() {
     });
 
   // Create arrays of resolved names and addresses using hooks
-  const resolvedNames = entries.map(entry => 
-    useName({ address: entry.input }));
-  const resolvedAddresses = entries.map(entry => 
-    useAddress({ name: entry.input }));
+  const resolvedNames = entries.map((entry) =>
+    useName({ address: entry.input })
+  );
+  const resolvedAddresses = entries.map((entry) =>
+    useAddress({ name: entry.input })
+  );
 
   // Update entries when resolved data changes
   useEffect(() => {
