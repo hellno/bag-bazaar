@@ -36,11 +36,12 @@ const paymasterClient = createPimlicoClient({
   }
 });
 
-type Step = 'usernames' | 'processing' | 'verification' | 'completion';
+type Step = 'usernames' | 'processing' | 'verification' | 'completion' | 'token-creation' | 'token-pending' | 'token-success';
 
 interface SafeDeploymentStatus {
   isDeploying: boolean;
   safeAddress?: string;
+  tokenAddress?: string;
   error?: string;
 }
 
@@ -277,11 +278,75 @@ export default function Component() {
       case 'completion':
         return (
           <div className="space-y-6 text-center">
-            <h2 className="text-4xl font-bold">All Set!</h2>
-            <CheckCircle2 className="mx-auto h-16 w-16 text-green-500" />
+            <h2 className="text-4xl font-bold">Bags are ready! 🎒</h2>
+            <div className="rounded-lg bg-gray-50 p-6">
+              <p className="text-xl text-gray-600 mb-4">
+                Load them now with some ETH to get started
+              </p>
+              <div className="font-mono text-sm mb-4">
+                Safe Address: {safeDeploymentStatus.safeAddress}
+              </div>
+              <Button
+                onClick={() => setCurrentStep('token-creation')}
+                className="flex items-center justify-center gap-2 p-6 text-xl w-full"
+              >
+                Create tokens <ArrowRight className="h-6 w-6" />
+              </Button>
+            </div>
+          </div>
+        );
+
+      case 'token-creation':
+        return (
+          <div className="space-y-6 text-center">
+            <h2 className="text-4xl font-bold">Create Tokens 🪙</h2>
+            <div className="rounded-lg bg-gray-50 p-6">
+              <p className="text-xl text-gray-600 mb-4">
+                Creating tokens for your shared bag
+              </p>
+              <Button
+                onClick={() => setCurrentStep('token-pending')}
+                className="flex items-center justify-center gap-2 p-6 text-xl w-full"
+              >
+                Start token creation <ArrowRight className="h-6 w-6" />
+              </Button>
+            </div>
+          </div>
+        );
+
+      case 'token-pending':
+        return (
+          <div className="space-y-6 text-center">
+            <h2 className="text-4xl font-bold">Creating Tokens...</h2>
+            <div className="flex justify-center">
+              <Loader2 className="h-16 w-16 animate-spin text-blue-600" />
+            </div>
             <p className="text-xl text-gray-600">
-              Your invitations have been sent successfully!
+              Please wait while we create your tokens
             </p>
+            {setTimeout(() => setCurrentStep('token-success'), 3000)}
+          </div>
+        );
+
+      case 'token-success':
+        return (
+          <div className="space-y-6 text-center">
+            <h2 className="text-4xl font-bold">Success! 🎉</h2>
+            <CheckCircle2 className="mx-auto h-16 w-16 text-green-500" />
+            <div className="rounded-lg bg-gray-50 p-6">
+              <p className="text-xl text-gray-600 mb-4">
+                Your tokens have been created successfully
+              </p>
+              <div className="font-mono text-sm mb-4">
+                Token Address: {safeDeploymentStatus.tokenAddress}
+              </div>
+              <Button
+                onClick={() => window.location.href = '/dashboard'}
+                className="flex items-center justify-center gap-2 p-6 text-xl w-full"
+              >
+                Go to Dashboard <ArrowRight className="h-6 w-6" />
+              </Button>
+            </div>
           </div>
         );
     }
