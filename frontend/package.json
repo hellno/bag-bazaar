@@ -20,6 +20,7 @@
     ]
   },
   "dependencies": {
+    "@1inch/cross-chain-sdk": "^0.1.10",
     "@coinbase/onchainkit": "^0.35.5",
     "@dnd-kit/core": "^6.1.0",
     "@dnd-kit/modifiers": "^7.0.0",
@@ -48,6 +49,8 @@
     "@radix-ui/react-toast": "^1.2.2",
     "@radix-ui/react-tooltip": "^1.1.4",
     "@rainbow-me/rainbowkit": "^2.2.0",
+    "@safe-global/protocol-kit": "^5.0.4",
+    "@safe-global/sdk-starter-kit": "^1.0.4",
     "@tanstack/react-query": "^5.60.5",
     "@tanstack/react-table": "^8.20.5",
     "@types/node": "20.5.7",
@@ -68,6 +71,7 @@
     "next-themes": "^0.2.1",
     "nextjs-toploader": "^1.6.12",
     "nuqs": "^1.20.0",
+    "permissionless": "^0.2.17",
     "postcss": "8.4.28",
     "react": "^18.3.1",
     "react-day-picker": "^8.10.1",

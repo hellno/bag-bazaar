@@ -269,7 +269,8 @@ export default function Component() {
               {safeDeploymentStatus.safeAddress && (
                 <div className="rounded-lg bg-gray-50 p-4">
                   <p className="font-mono text-sm">
-                    Safe Address: {safeDeploymentStatus.safeAddress}
+                    Safe Address:{' '}
+                    {`https://base.blockscout.com/address/${safeDeploymentStatus.safeAddress}`}
                   </p>
                 </div>
               )}
@@ -289,14 +290,15 @@ export default function Component() {
             <h2 className="text-4xl font-bold">Bags are ready! 🎒</h2>
             <div className="rounded-lg bg-gray-50 p-6">
               <p className="mb-4 text-xl text-gray-600">
-                Load your bags to get started
+                Prepare your shared bag
               </p>
               <div className="mb-6 font-mono text-sm">
-                Safe Address: {safeDeploymentStatus.safeAddress}
+                Safe Address:{' '}
+                {`https://base.blockscout.com/address/${safeDeploymentStatus.safeAddress}`}
               </div>
-              
+
               {safeDeploymentStatus.safeAddress && (
-                <LoadBags 
+                <LoadBags
                   safeAddress={safeDeploymentStatus.safeAddress}
                   onSuccess={() => setCurrentStep('token-creation')}
                 />
