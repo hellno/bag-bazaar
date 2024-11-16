@@ -7,7 +7,13 @@ import { Input } from '@/components/ui/input';
 import { Loader2, ArrowRight, Wallet } from 'lucide-react';
 import { buildSwapTransaction, getTokens } from '@coinbase/onchainkit/api';
 import type { Token } from '@coinbase/onchainkit/token';
-import { parseEther, formatEther, createPublicClient, http, formatUnits } from 'viem';
+import {
+  parseEther,
+  formatEther,
+  createPublicClient,
+  http,
+  formatUnits
+} from 'viem';
 import { baseSepolia } from 'viem/chains';
 import { useBalance, useWalletClient } from 'wagmi';
 
@@ -36,7 +42,6 @@ function getRandomBytes32(): string {
   );
 }
 
-
 interface LoadBagsProps {
   safeAddress: string;
   onSuccess?: () => void;
@@ -49,13 +54,13 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
   const [selectedToken, setSelectedToken] = useState<Token | null>(null);
   const [availableTokens, setAvailableTokens] = useState<Token[]>([]);
   const [isLoadingTokens, setIsLoadingTokens] = useState(true);
-
+  console.log('availabletokens', availableTokens);
   // Fetch available tokens on component mount
   useEffect(() => {
     const fetchTokens = async () => {
       try {
         setIsLoadingTokens(true);
-        const tokens = await getTokens({ 
+        const tokens = await getTokens({
           limit: '20',
           chainId: baseSepolia.id.toString()
         });
@@ -118,7 +123,7 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
       // Build swap transaction
       const swapTx = await buildSwapTransaction({
         fromAddress: walletClient.account.address,
-        from: fromToken,
+        from: selectedToken,
         to: toToken,
         amount: amount,
         useAggregator: true
@@ -158,7 +163,7 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
   return (
     <div className="space-y-4 rounded-lg bg-gray-50 p-6">
       <div className="mb-4 flex items-center justify-between">
-        <h3 className="text-lg font-medium">Load your shared bag</h3>
+        {/* <h3 className="text-lg font-medium">Load your shared bag</h3> */}
         <div className="flex items-center gap-2 text-sm text-gray-500">
           <Wallet className="h-4 w-4" />
           Balance:{' '}
@@ -171,7 +176,7 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
       <Select
         value={selectedToken?.address ?? ''}
         onValueChange={(value) => {
-          const token = availableTokens.find(t => t.address === value);
+          const token = availableTokens.find((t) => t.address === value);
           setSelectedToken(token ?? null);
         }}
         disabled={isLoadingTokens}
@@ -181,9 +186,9 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
             {selectedToken ? (
               <div className="flex items-center gap-2">
                 {selectedToken.image && (
-                  <img 
-                    src={selectedToken.image} 
-                    alt={selectedToken.symbol} 
+                  <img
+                    src={selectedToken.image}
+                    alt={selectedToken.symbol}
                     className="h-5 w-5 rounded-full"
                   />
                 )}
@@ -207,16 +212,14 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
               <SelectItem key={token.address} value={token.address}>
                 <div className="flex items-center gap-2">
                   {token.image && (
-                    <img 
-                      src={token.image} 
-                      alt={token.symbol} 
+                    <img
+                      src={token.image}
+                      alt={token.symbol}
                       className="h-5 w-5 rounded-full"
                     />
                   )}
                   <span>{token.symbol}</span>
-                  <span className="text-sm text-gray-500">
-                    ({token.name})
-                  </span>
+                  <span className="text-sm text-gray-500">({token.name})</span>
                 </div>
               </SelectItem>
             ))
@@ -228,7 +231,7 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
         <div className="flex gap-4">
           <Input
             type="text"
-            placeholder={`Amount in ${selectedToken}`}
+            placeholder={`Amount in ${selectedToken.name}`}
             value={amount}
             onChange={handleAmountChange}
             className="text-xl"
