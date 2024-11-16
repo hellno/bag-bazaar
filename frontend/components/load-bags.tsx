@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Loader2, Wallet, Send } from 'lucide-react';
+import { Loader2, Wallet, Send, ArrowRight } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useWriteContract } from 'wagmi';
 import type { Token } from '@coinbase/onchainkit/token';
@@ -252,56 +252,39 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
             <Select
               value={selectedToken?.address ?? ''}
               onValueChange={(value) => {
-                const token = availableTokens.find((t) => t.address === value);
-                setSelectedToken(token ?? null);
+                // Simplified since we're only using WETH
+                console.log('Token selection disabled - using WETH only');
               }}
-              disabled={isLoadingTokens}
+              disabled={true}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select token">
-                  {selectedToken ? (
-                    <div className="flex items-center gap-2">
-                      {selectedToken.image && (
-                        <img
-                          src={selectedToken.image}
-                          alt={selectedToken.symbol}
-                          className="h-5 w-5 rounded-full"
-                        />
-                      )}
-                      <span>{selectedToken.symbol}</span>
-                    </div>
-                  ) : (
-                    'Select token'
-                  )}
+                  <div className="flex items-center gap-2">
+                    {selectedToken.image && (
+                      <img
+                        src={selectedToken.image}
+                        alt={selectedToken.symbol}
+                        className="h-5 w-5 rounded-full"
+                      />
+                    )}
+                    <span>{selectedToken.symbol}</span>
+                  </div>
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>
-                {isLoadingTokens ? (
-                  <SelectItem value="loading" disabled>
-                    <div className="flex items-center gap-2">
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Loading tokens...
-                    </div>
-                  </SelectItem>
-                ) : (
-                  availableTokens.map((token) => (
-                    <SelectItem key={token.address} value={token.address}>
-                      <div className="flex items-center gap-2">
-                        {token.image && (
-                          <img
-                            src={token.image}
-                            alt={token.symbol}
-                            className="h-5 w-5 rounded-full"
-                          />
-                        )}
-                        <span>{token.symbol}</span>
-                        <span className="text-sm text-gray-500">
-                          ({token.name})
-                        </span>
-                      </div>
-                    </SelectItem>
-                  ))
-                )}
+                <SelectItem value={WETH_ADDRESS}>
+                  <div className="flex items-center gap-2">
+                    <img
+                      src={selectedToken.image}
+                      alt={selectedToken.symbol}
+                      className="h-5 w-5 rounded-full"
+                    />
+                    <span>{selectedToken.symbol}</span>
+                    <span className="text-sm text-gray-500">
+                      ({selectedToken.name})
+                    </span>
+                  </div>
+                </SelectItem>
               </SelectContent>
             </Select>
 
