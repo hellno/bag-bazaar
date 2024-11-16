@@ -4,8 +4,24 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Loader2 } from 'lucide-react';
-import { useWriteContract } from 'wagmi';
+import { useWriteContract, useNetwork } from 'wagmi';
 import { parseEther } from 'viem';
+import { base, baseSepolia, mainnet, sepolia } from 'viem/chains';
+
+const TOKEN_FACTORY_ADDRESSES: { [chainId: number]: `0x${string}` } = {
+  [base.id]: '0x4D4c405b2Ff2342bA3cE3c2c6087F3CEf9b6d2eA',
+  [baseSepolia.id]: '0x4D4c405b2Ff2342bA3cE3c2c6087F3CEf9b6d2eA',
+  [mainnet.id]: '0x0000000000000000000000000000000000000000',
+  [sepolia.id]: '0x0000000000000000000000000000000000000000'
+} as const;
+
+function getTokenFactoryAddress(chainId: number): `0x${string}` {
+  const address = TOKEN_FACTORY_ADDRESSES[chainId];
+  if (!address) {
+    throw new Error(`No token factory address found for chain ID ${chainId}`);
+  }
+  return address;
+}
 
 const TOKEN_FACTORY_ABI = [
   {
@@ -28,7 +44,6 @@ const TOKEN_FACTORY_ABI = [
   }
 ] as const;
 
-const TOKEN_FACTORY_ADDRESS = '0x4D4c405b2Ff2342bA3cE3c2c6087F3CEf9b6d2eA' as `0x${string}`;
 
 interface TokenCreationFormProps {
   onSubmit: (tokenName: string, tokenTicker: string) => void;
@@ -44,12 +59,20 @@ export function TokenCreationForm({
   const [error, setError] = useState<string | null>(null);
 
   const { writeContractAsync, isPending: isContractWritePending } = useWriteContract();
+  const { chain } = useNetwork();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     
+    if (!chain) {
+      setError('Please connect your wallet to continue');
+      return;
+    }
+
     try {
+      const factoryAddress = getTokenFactoryAddress(chain.id);
+      
       const defaultParams = {
         supply: parseEther('1000000000'), // 1 billion tokens with 18 decimals
         initialTick: -207400n,
@@ -59,7 +82,7 @@ export function TokenCreationForm({
       };
 
       const tx = await writeContractAsync({
-        address: TOKEN_FACTORY_ADDRESS,
+        address: factoryAddress,
         abi: TOKEN_FACTORY_ABI,
         functionName: 'deployToken',
         args: [
@@ -119,9 +142,15 @@ export function TokenCreationForm({
         </p>
       </div>
 
+      {!chain && (
+        <p className="text-yellow-600">Please connect your wallet to continue</p>
+      )}
+      {chain && !TOKEN_FACTORY_ADDRESSES[chain.id] && (
+        <p className="text-red-600">Token creation is not supported on this network</p>
+      )}
       <Button
         type="submit"
-        disabled={isLoading || !tokenName || !tokenTicker}
+        disabled={isLoading || !tokenName || !tokenTicker || !chain || !TOKEN_FACTORY_ADDRESSES[chain?.id]}
         className="mt-8 h-16 w-full text-xl"
       >
         {isLoading ? (
