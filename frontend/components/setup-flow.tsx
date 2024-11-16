@@ -51,7 +51,11 @@ export default function Component() {
 
   const removeEntry = (index: number) => {
     if (entries.length > 1) {
-      setEntries(entries.filter((_, i) => i !== index));
+      // Create a new array without mutating the original
+      const newEntries = [...entries];
+      // Remove the entry at the specific index
+      newEntries.splice(index, 1);
+      setEntries(newEntries);
     }
   };
 
