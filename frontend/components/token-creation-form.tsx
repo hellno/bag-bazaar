@@ -113,6 +113,11 @@ export function TokenCreationForm({
       return;
     }
 
+    if (!chain || !address) {
+      setError('Please connect your wallet to continue');
+      return;
+    }
+
     if (!saltData) {
       setError('Failed to generate salt');
       return;
