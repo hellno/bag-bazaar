@@ -31,9 +31,7 @@ interface InviteEntry {
 
 export default function Component() {
   const [currentStep, setCurrentStep] = useState<Step>('usernames');
-  const [entries, setEntries] = useState<InviteEntry[]>([
-    { input: '' }
-  ]);
+  const [entries, setEntries] = useState<InviteEntry[]>([{ input: '' }]);
   const [safeDeploymentStatus, setSafeDeploymentStatus] =
     useState<SafeDeploymentStatus>({
       isDeploying: false
@@ -43,7 +41,11 @@ export default function Component() {
     setEntries([...entries, { input: '' }]);
   };
 
-  const updateEntry = (index: number, input: string, resolvedAddress?: string) => {
+  const updateEntry = (
+    index: number,
+    input: string,
+    resolvedAddress?: string
+  ) => {
     const newEntries = [...entries];
     newEntries[index] = { input, resolvedAddress };
     setEntries(newEntries);
@@ -52,7 +54,7 @@ export default function Component() {
   const removeEntry = (index: number) => {
     console.log('Removing entry at index:', index);
     console.log('Current entries:', entries);
-    
+
     if (entries.length > 1) {
       const newEntries = entries.filter((_, i) => i !== index);
       console.log('New entries after removal:', newEntries);
@@ -145,9 +147,12 @@ export default function Component() {
                 <AddressInput
                   key={index}
                   value={entry.input}
-                  onChange={(value, resolvedAddress) => 
-                    updateEntry(index, value, resolvedAddress)}
-                  onRemove={entries.length > 1 ? () => removeEntry(index) : undefined}
+                  onChange={(value, resolvedAddress) =>
+                    updateEntry(index, value, resolvedAddress)
+                  }
+                  onRemove={
+                    entries.length > 1 ? () => removeEntry(index) : undefined
+                  }
                   showRemoveButton={entries.length > 1}
                 />
               ))}
@@ -166,7 +171,7 @@ export default function Component() {
               className="flex w-full items-center justify-center gap-4 rounded-lg bg-blue-600 p-8 text-3xl font-bold text-white hover:bg-blue-700 disabled:opacity-50"
             >
               <Send className="h-8 w-8" />
-              Send Invites
+              Create shared bag
             </Button>
           </>
         );
