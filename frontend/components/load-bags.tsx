@@ -304,14 +304,14 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
                 const encodedValue = keccak256(
                   encodePacked(
                     ['uint64', 'bytes32'],
-                    [BigInt(i), secretHash]
+                    [BigInt(i), secretHash as `0x${string}`]
                   ) as `0x${string}`
                 );
-              
+
                 return {
                   _tag: 'MerkleLeaf' as const,
                   value: encodedValue
-                } satisfies MerkleLeaf;
+                };
               })
             );
 
