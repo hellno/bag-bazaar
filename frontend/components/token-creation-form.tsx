@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Loader2 } from 'lucide-react';
-import { useWriteContract, useAccount, useConfig } from 'wagmi';
+import { useWriteContract, useAccount, useConfig, readContract } from 'wagmi';
 import { parseEther } from 'viem';
 import { base, baseSepolia, mainnet, sepolia } from 'viem/chains';
 
@@ -41,6 +41,21 @@ const TOKEN_FACTORY_ABI = [
     ],
     stateMutability: 'payable',
     type: 'function'
+  },
+  {
+    inputs: [
+      { name: 'deployer', type: 'address' },
+      { name: 'name', type: 'string' },
+      { name: 'symbol', type: 'string' },
+      { name: 'supply', type: 'uint256' }
+    ],
+    name: 'generateSalt',
+    outputs: [
+      { name: 'salt', type: 'bytes32' },
+      { name: 'token', type: 'address' }
+    ],
+    stateMutability: 'view',
+    type: 'function'
   }
 ] as const;
 
@@ -62,6 +77,32 @@ export function TokenCreationForm({
   const [tokenName, setTokenName] = useState('');
   const [tokenTicker, setTokenTicker] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [isGeneratingSalt, setIsGeneratingSalt] = useState(false);
+
+  const generateTokenSalt = async (
+    factoryAddress: `0x${string}`,
+    deployer: `0x${string}`,
+    name: string,
+    symbol: string,
+    supply: bigint
+  ): Promise<{ salt: `0x${string}`; predictedAddress: `0x${string}` }> => {
+    try {
+      const [salt, predictedAddress] = await readContract({
+        address: factoryAddress,
+        abi: TOKEN_FACTORY_ABI,
+        functionName: 'generateSalt',
+        args: [deployer, name, symbol, supply]
+      });
+
+      return {
+        salt,
+        predictedAddress
+      };
+    } catch (error) {
+      console.error('Error generating salt:', error);
+      throw new Error('Failed to generate salt for token deployment');
+    }
+  };
 
   const { writeContractAsync, isPending: isContractWritePending } =
     useWriteContract();
@@ -77,16 +118,22 @@ export function TokenCreationForm({
       return;
     }
 
+    setIsGeneratingSalt(true);
     try {
       const factoryAddress = getTokenFactoryAddress(chain.id);
+      const supply = parseEther('1000000000'); // 1 billion tokens with 18 decimals
 
-      const defaultParams = {
-        supply: parseEther('1000000000'), // 1 billion tokens with 18 decimals
-        initialTick: -207400n,
-        fee: 10000,
-        salt: '0x100000000000000000000000000000000000000000000000000000000000000e' as `0x${string}`,
-        deployer: address
-      };
+      // Generate salt before deployment
+      const { salt, predictedAddress } = await generateTokenSalt(
+        factoryAddress,
+        address,
+        tokenName,
+        tokenTicker,
+        supply
+      );
+
+      console.log('Generated salt:', salt);
+      console.log('Predicted token address:', predictedAddress);
 
       const tx = await writeContractAsync({
         address: factoryAddress,
@@ -95,11 +142,11 @@ export function TokenCreationForm({
         args: [
           tokenName,
           tokenTicker,
-          defaultParams.supply,
-          defaultParams.initialTick,
-          defaultParams.fee,
-          defaultParams.salt,
-          defaultParams.deployer
+          supply,
+          -207400n, // initialTick
+          10000, // fee
+          salt,
+          address // deployer
         ]
       });
 
@@ -169,6 +216,7 @@ export function TokenCreationForm({
         type="submit"
         disabled={
           isLoading ||
+          isGeneratingSalt ||
           !tokenName ||
           !tokenTicker ||
           !chain ||
@@ -176,7 +224,12 @@ export function TokenCreationForm({
         }
         className="mt-8 h-16 w-full text-xl"
       >
-        {isLoading ? (
+        {isGeneratingSalt ? (
+          <>
+            <Loader2 className="mr-2 h-6 w-6 animate-spin" />
+            Generating Salt...
+          </>
+        ) : isLoading ? (
           <>
             <Loader2 className="mr-2 h-6 w-6 animate-spin" />
             Creating Token...
