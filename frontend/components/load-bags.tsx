@@ -188,13 +188,9 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
     address: walletClient?.account.address
   });
 
-  const {
-    data: transferWethHash,
-    isPending: transferWethHashPending,
-    writeContract
-  } = useWriteContract();
+  const { writeContractAsync } = useWriteContract();
 
-  const handleSendToken = () => {
+  const handleSendToken = async () => {
     if (!selectedToken || !amount || !safeAddress) {
       setError('Missing required parameters');
       return;
@@ -206,12 +202,14 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
     try {
       const parsedAmount = parseUnits(amount, selectedToken.decimals);
 
-      writeContract({
+      await writeContractAsync({
         abi: ERC20_ABI,
         address: selectedToken.address as `0x${string}`,
         functionName: 'transfer',
         args: [safeAddress as `0x${string}`, parsedAmount]
       });
+
+      onSuccess?.();
     } catch (err) {
       console.error('Send token error:', err);
       setError(err instanceof Error ? err.message : 'Failed to send token');
