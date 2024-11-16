@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { LoadBags } from '@/components/load-bags';
 import { Button } from '@/components/ui/button';
+import { TokenCreationForm } from '@/components/token-creation-form';
 import { BlockscoutLink } from '@/components/ui/blockscout-link';
 import { AddressInput } from '@/components/address-input';
 import {
@@ -317,18 +318,18 @@ export default function Component() {
 
       case 'token-creation':
         return (
-          <div className="space-y-6 text-center">
-            <h2 className="text-4xl font-bold">Create Tokens 🪙</h2>
-            <div className="rounded-lg bg-gray-50 p-6">
-              <p className="mb-4 text-xl text-gray-600">
-                Creating a token from your shared bag
+          <div className="space-y-6">
+            <h2 className="text-center text-4xl font-bold">Create Your Token 🪙</h2>
+            <div className="rounded-lg bg-gray-50 p-8">
+              <p className="mb-8 text-center text-xl text-gray-600">
+                Choose a name and symbol for your shared token
               </p>
-              <Button
-                onClick={() => setCurrentStep('token-pending')}
-                className="flex w-full items-center justify-center gap-2 p-6 text-xl"
-              >
-                Start token creation <ArrowRight className="h-6 w-6" />
-              </Button>
+              <TokenCreationForm
+                onSubmit={(name, ticker) => {
+                  console.log('Creating token:', { name, ticker });
+                  setCurrentStep('token-pending');
+                }}
+              />
             </div>
           </div>
         );
