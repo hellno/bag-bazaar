@@ -136,7 +136,7 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
         srcChainId: sourceChain,
         dstChainId: NetworkEnum.COINBASE,
         srcTokenAddress: SUPPORTED_NETWORKS[sourceChain].usdcAddress,
-        dstTokenAddress: SUPPORTED_NETWORKS[NetworkEnum.COINBASE].w,
+        dstTokenAddress: SUPPORTED_NETWORKS[NetworkEnum.COINBASE].wethAddress,
         amount: parseEther(amount).toString(),
         enableEstimate: true,
         walletAddress: walletClient.account.address
