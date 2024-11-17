@@ -307,15 +307,12 @@ export default function Component() {
       case 'landing':
         return (
           <div className="flex flex-col items-center justify-center space-y-8 text-center">
-            <h1 className="text-5xl sm:text-7xl font-bold text-gray-800">
-              bag bazaar
+            <h1 className="text-5xl font-bold text-foreground sm:text-7xl">
+              Launch memecoins with your friends
             </h1>
-            <p className="text-xl sm:text-2xl text-gray-600 max-w-2xl">
-              Create shared wallets and launch memecoins with your friends
-            </p>
-            <Button 
+            <Button
               onClick={() => setCurrentStep('usernames')}
-              className="h-16 sm:h-20 px-8 sm:px-12 text-2xl sm:text-3xl font-bold rounded-2xl bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+              className="h-16 rounded-2xl bg-blue-600 px-8 text-2xl font-bold text-white transition-colors hover:bg-blue-700 sm:h-20 sm:px-12 sm:text-3xl"
             >
               Get Started 🚀
             </Button>
@@ -326,11 +323,9 @@ export default function Component() {
         return (
           <>
             <h1 className="flex flex-col items-center justify-center gap-2 text-center text-5xl font-bold text-gray-800 sm:flex-row sm:gap-4 sm:text-7xl">
-              Launch memecoins <br />with your friends
+              Launch memecoins <br />
+              with your friends
             </h1>
-            {/* <p className="mb-6 text-center text-gray-600">
-              Enter ETH addresses or ENS names
-            </p> */}
             <div className="space-y-6">
               {entries.map((entry, index) => (
                 <AddressInput
@@ -357,7 +352,7 @@ export default function Component() {
             <Button
               onClick={handleInvite}
               disabled={!entries.some((entry) => entry.isValid)}
-              className="h-12 flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 p-6 text-2xl font-bold text-white hover:bg-blue-700 disabled:opacity-50 sm:gap-4 sm:p-8 sm:text-3xl"
+              className="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-blue-600 p-6 text-2xl font-bold text-white hover:bg-blue-700 disabled:opacity-50 sm:gap-4 sm:p-8 sm:text-3xl"
             >
               Create shared bag 🎒
             </Button>
@@ -390,7 +385,7 @@ export default function Component() {
             <h2 className="text-3xl font-bold sm:text-4xl">
               Shared bag is ready 🎒
             </h2>
-            <div className="text-center mx-auto space-y-3 sm:space-y-4">
+            <div className="mx-auto space-y-3 text-center sm:space-y-4">
               <p className="text-xl text-gray-600"></p>
               {safeDeploymentStatus.safeAddress && (
                 <div className="rounded-lg p-4">
