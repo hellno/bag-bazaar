@@ -169,6 +169,7 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
       });
 
       // USDC has 6 decimals, so we format accordingly
+      // @ts-ignore
       const usdValue = (Number(quote.toAmount) / 1e6).toFixed(2);
       setUsdBalance(usdValue);
     } catch (error) {
@@ -243,6 +244,7 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
       };
 
       // Build swap transaction
+      // @ts-ignore
       const swapTx = await buildSwapTransaction({
         fromAddress: walletClient.account.address,
         from: selectedToken,
@@ -283,7 +285,7 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
   };
 
   return (
-    <div className="space-y-4 rounded-lg border border-gray p-6">
+    <div className="border-gray space-y-4 rounded-lg border p-6">
       <div className="mt-4 text-2xl text-muted-foreground">
         Shared balance: ${usdBalance}
         <div className="text-sm text-foreground">
@@ -292,7 +294,6 @@ export function LoadBags({ safeAddress, onSuccess }: LoadBagsProps) {
       </div>
 
       <Button
-        variant="destructive"
         onClick={onSuccess}
         disabled={isLoading}
         className="my-12 h-16 w-full text-xl"

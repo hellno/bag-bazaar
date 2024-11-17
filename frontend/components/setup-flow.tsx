@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useTransactionReceipt } from 'wagmi';
+import { useAccount, useTransactionReceipt } from 'wagmi';
 import { LoadBags } from '@/components/load-bags';
 import { Button } from '@/components/ui/button';
 import { TokenCreationForm } from '@/components/token-creation-form';
@@ -63,6 +63,7 @@ interface InviteEntry {
 }
 
 export default function Component() {
+  const { address } = useAccount();
   const [currentStep, setCurrentStep] = useState<Step>('usernames');
   // const [currentStep, setCurrentStep] = useState<Step>('completion');
   const [error, setError] = useState<string | null>(null);
@@ -85,8 +86,8 @@ export default function Component() {
     isPending: isTxPending,
     isError: isTxError
   } = useTransactionReceipt({
-    hash: tokenCreationTxHash,
-    enabled: !!tokenCreationTxHash
+    hash: tokenCreationTxHash
+    // enabled: !!tokenCreationTxHash as Boolean
   });
 
   useEffect(() => {
@@ -305,7 +306,7 @@ export default function Component() {
       case 'usernames':
         return (
           <>
-            <h1 className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-center text-3xl sm:text-5xl font-bold text-gray-800">
+            <h1 className="flex flex-col items-center justify-center gap-2 text-center text-3xl font-bold text-gray-800 sm:flex-row sm:gap-4 sm:text-5xl">
               <UserPlus className="h-12 w-12 sm:h-16 sm:w-16" />
               Invite Friends
             </h1>
@@ -330,7 +331,7 @@ export default function Component() {
             <Button
               onClick={addEntry}
               variant="outline"
-              className="flex w-full items-center justify-center gap-2 sm:gap-4 rounded-lg border-2 border-dashed p-4 sm:p-6 text-xl sm:text-2xl"
+              className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed p-4 text-xl sm:gap-4 sm:p-6 sm:text-2xl"
             >
               <PlusCircle className="h-6 w-6 sm:h-8 sm:w-8" />
               Add Another Friend
@@ -338,7 +339,7 @@ export default function Component() {
             <Button
               onClick={handleInvite}
               disabled={!entries.some((entry) => entry.isValid)}
-              className="flex w-full items-center justify-center gap-2 sm:gap-4 rounded-lg bg-blue-600 p-6 sm:p-8 text-2xl sm:text-3xl font-bold text-white hover:bg-blue-700 disabled:opacity-50"
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 p-6 text-2xl font-bold text-white hover:bg-blue-700 disabled:opacity-50 sm:gap-4 sm:p-8 sm:text-3xl"
             >
               <CirclePlus className="h-6 w-6 sm:h-8 sm:w-8" />
               Create shared bag
@@ -348,12 +349,14 @@ export default function Component() {
 
       case 'processing':
         return (
-          <div className="space-y-4 sm:space-y-6 text-center">
-            <h2 className="text-3xl sm:text-4xl font-bold">Creating shared bag 💰</h2>
+          <div className="space-y-4 text-center sm:space-y-6">
+            <h2 className="text-3xl font-bold sm:text-4xl">
+              Creating shared bag 💰
+            </h2>
             <div className="flex justify-center">
-              <Loader2 className="h-12 w-12 sm:h-16 sm:w-16 animate-spin text-blue-600" />
+              <Loader2 className="h-12 w-12 animate-spin text-blue-600 sm:h-16 sm:w-16" />
             </div>
-            <p className="text-lg sm:text-xl text-gray-600">
+            <p className="text-lg text-gray-600 sm:text-xl">
               {safeDeploymentStatus.isDeploying
                 ? 'Deploying Safe smart account...'
                 : 'Processing your invitations...'}
@@ -366,8 +369,10 @@ export default function Component() {
 
       case 'verification':
         return (
-          <div className="space-y-4 sm:space-y-6 text-center">
-            <h2 className="text-3xl sm:text-4xl font-bold">Shared bag is ready 🎒</h2>
+          <div className="space-y-4 text-center sm:space-y-6">
+            <h2 className="text-3xl font-bold sm:text-4xl">
+              Shared bag is ready 🎒
+            </h2>
             <div className="mx-auto space-y-3 sm:space-y-4">
               <p className="text-xl text-gray-600"></p>
               {safeDeploymentStatus.safeAddress && (
@@ -382,7 +387,7 @@ export default function Component() {
               )}
               <Button
                 onClick={() => setCurrentStep('completion')}
-                className="flex items-center justify-center gap-2 p-4 sm:p-6 text-lg sm:text-xl"
+                className="flex items-center justify-center gap-2 p-4 text-lg sm:p-6 sm:text-xl"
               >
                 Continue <ArrowRight className="h-5 w-5 sm:h-6 sm:w-6" />
               </Button>
@@ -418,7 +423,7 @@ export default function Component() {
       case 'token-creation':
         return (
           <div className="space-y-4 sm:space-y-6">
-            <h2 className="text-center text-3xl sm:text-4xl font-bold">
+            <h2 className="text-center text-3xl font-bold sm:text-4xl">
               Create Your Token ✨
             </h2>
             <div className="border-gray rounded-lg border p-4 sm:p-8">
@@ -426,6 +431,9 @@ export default function Component() {
                 Choose a name and symbol for your shared token
               </p> */}
               <TokenCreationForm
+                deployer={
+                  (safeDeploymentStatus.safeAddress || address) as `0x${string}`
+                }
                 onSubmit={(name, ticker, hash, tokenAddress) => {
                   console.log('Creating token:', { name, ticker });
                   setCurrentStep('token-pending');
@@ -484,11 +492,11 @@ export default function Component() {
 
       case 'token-success':
         return (
-          <div className="space-y-4 sm:space-y-6 text-center">
-            <h2 className="text-3xl sm:text-4xl font-bold">Success! 🎉</h2>
-            <CheckCircle2 className="mx-auto h-12 w-12 sm:h-16 sm:w-16 text-green-500" />
+          <div className="space-y-4 text-center sm:space-y-6">
+            <h2 className="text-3xl font-bold sm:text-4xl">Success! 🎉</h2>
+            <CheckCircle2 className="mx-auto h-12 w-12 text-green-500 sm:h-16 sm:w-16" />
             <div className="rounded-lg bg-gray-50 p-4 sm:p-6">
-              <p className="mb-3 sm:mb-4 text-lg sm:text-xl text-gray-600">
+              <p className="mb-3 text-lg text-gray-600 sm:mb-4 sm:text-xl">
                 Your token has been launched successfully!
               </p>
               <div className="mb-4 font-mono text-sm">
@@ -497,9 +505,7 @@ export default function Component() {
                   <BlockscoutLink address={safeDeploymentStatus.tokenAddress} />
                 )}
               </div>
-              {JSON.stringify(txReceipt, (_, v) =>
-                typeof v === 'bigint' ? v.toString() : v
-              )}
+
               <div className="mb-4 font-mono text-sm">
                 Transaction:
                 {tokenCreationTxHash && (
@@ -513,8 +519,9 @@ export default function Component() {
                 )}
               </div>
               <a href={`https://warpcast.com`}>
-                <Button className="flex w-full items-center justify-center gap-2 p-4 sm:p-6 text-lg sm:text-xl">
-                  Share on Farcaster <ArrowRight className="h-5 w-5 sm:h-6 sm:w-6" />
+                <Button className="flex w-full items-center justify-center gap-2 p-4 text-lg sm:p-6 sm:text-xl">
+                  Share on Farcaster{' '}
+                  <ArrowRight className="h-5 w-5 sm:h-6 sm:w-6" />
                 </Button>
               </a>
             </div>
@@ -525,7 +532,9 @@ export default function Component() {
 
   return (
     <div className="flex min-h-screen items-center justify-center p-2 sm:p-4">
-      <div className="w-full max-w-3xl space-y-4 sm:space-y-8">{renderStep()}</div>
+      <div className="w-full max-w-3xl space-y-4 sm:space-y-8">
+        {renderStep()}
+      </div>
     </div>
   );
 }

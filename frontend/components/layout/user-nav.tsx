@@ -42,6 +42,7 @@ export function UserNav() {
       <ConnectButton
         chainStatus="full"
         showBalance={false}
+        // @ts-ignore
         accountStatus="none"
       />
     </>

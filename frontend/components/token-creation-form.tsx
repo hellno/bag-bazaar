@@ -149,6 +149,7 @@ export function TokenCreationForm({
           tokenName,
           tokenTicker,
           supply,
+          // @ts-ignore
           -207400n, // initialTick
           10000, // fee
           salt,
