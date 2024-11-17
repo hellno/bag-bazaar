@@ -16,11 +16,11 @@ contract Deploy is BaseScript {
         address guy = msg.sender;
 
         LockerFactory lFactory = new LockerFactory();
-        address weth = 0x4200000000000000000000000000000000000006;
-        address uniFactory = 0x1F98431c8aD98523631AE4a59f267346ea31F984;
-        address positionManager = 0xB7F724d6dDDFd008eFf5cc2834edDE5F9eF0d075;
+        address weth = 0x78c1b0C915c4FAA5FffA6CAbf0219DA63d7f4cb8;
+        address uniFactory = 0x0d922Fb1Bc191F64970ac40376643808b4B74Df9;
+        address positionManager = 0x5911cB3633e764939edc2d92b7e1ad375Bb57649;
         uint64 defaultLockingPeriod = 4132317178;
-        address swapRouter = 0xd1AAE39293221B77B0C71fBD6dCb7Ea29Bb5B166;
+        address swapRouter = 0x738fD6d10bCc05c230388B4027CAd37f82fe2AF2;
 
 
         factory = new SocialDexDeployer(
