@@ -1,5 +1,10 @@
 import { NextResponse } from 'next/server';
 
+function isValidEmail(email: string): boolean {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+}
+
 const DYNAMIC_API_URL = 'https://app.dynamicauth.com/api/v0';
 
 export async function POST(request: Request) {
