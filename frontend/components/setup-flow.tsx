@@ -353,7 +353,7 @@ export default function Component() {
         return (
           <div className="space-y-6 text-center">
             <h2 className="text-4xl font-bold">Shared bag is ready 🎒</h2>
-            <div className="space-y-4">
+            <div className="mx-auto space-y-4">
               <p className="text-xl text-gray-600"></p>
               {safeDeploymentStatus.safeAddress && (
                 <div className="rounded-lg p-4">
@@ -497,7 +497,7 @@ export default function Component() {
                   </div>
                 )}
               </div>
-              <a href="">
+              <a href={`https://warpcast.com`}>
                 <Button className="flex w-full items-center justify-center gap-2 p-6 text-xl">
                   Share on Farcaster <ArrowRight className="h-6 w-6" />
                 </Button>
