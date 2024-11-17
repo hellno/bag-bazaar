@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
 
+const DYNAMIC_API_URL = 'https://app.dynamicauth.com/api/v0';
+
 function isValidEmail(email: string): boolean {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
 }
-
-const DYNAMIC_API_URL = 'https://app.dynamicauth.com/api/v0';
 
 export async function POST(request: Request) {
   try {
@@ -25,6 +25,8 @@ export async function POST(request: Request) {
       );
     }
 
+    console.log('sending email to dynamic', email);
+
     const response = await fetch(
       `${DYNAMIC_API_URL}/environments/${environmentId}/embeddedWallets`,
       {
@@ -42,7 +44,7 @@ export async function POST(request: Request) {
         })
       }
     );
-
+    console.log('response', response);
     if (!response.ok) {
       const errorData = await response.json();
       return NextResponse.json(
@@ -52,6 +54,7 @@ export async function POST(request: Request) {
     }
 
     const data = await response.json();
+    console.log('data', data);
     return NextResponse.json(data);
   } catch (error) {
     console.error('Error creating embedded wallet:', error);
