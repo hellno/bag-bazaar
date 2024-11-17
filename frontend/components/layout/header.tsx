@@ -9,9 +9,9 @@ import { ConnectButton } from '@rainbow-me/rainbowkit';
 
 export default function Header() {
   return (
-    <header className="flex h-16 shrink-0 items-center justify-between gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
-      <div className="flex items-center gap-2 px-4">
-        <h2 className="text-2xl font-bold tracking-tight">
+    <header className="flex h-13 sm:h-16 shrink-0 items-center justify-between gap-1 sm:gap-2 px-2 sm:px-4 transition-[width,height] ease-linear">
+      <div className="flex items-center gap-1 sm:gap-2">
+        <h2 className="text-lg sm:text-2xl font-bold tracking-tight truncate">
           welcome to the bag bazaar 💰✨
         </h2>
         {/* <SidebarTrigger className="-ml-1" />
@@ -19,7 +19,7 @@ export default function Header() {
         <Breadcrumbs /> */}
       </div>
 
-      <div className="flex items-center gap-2 px-4">
+      <div className="flex items-center gap-1 sm:gap-2">
         <div className="hidden md:flex">{/* <SearchInput /> */}</div>
         <UserNav />
         <ThemeToggle />
