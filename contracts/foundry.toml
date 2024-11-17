@@ -56,3 +56,6 @@
 #  polygon = "https://polygon-mainnet.infura.io/v3/${API_KEY_INFURA}"
 #  sepolia = "https://sepolia.infura.io/v3/${API_KEY_INFURA}"
   unichain = "https://sepolia.unichain.org"
+  mantle = "https://rpc.mantle.xyz"
+  morph = "https://rpc-quicknode-holesky.morphl2.io"
+  arb_sep = "https://arbitrum-sepolia.gateway.tenderly.co"
