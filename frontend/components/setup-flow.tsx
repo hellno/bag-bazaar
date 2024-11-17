@@ -306,9 +306,8 @@ export default function Component() {
       case 'usernames':
         return (
           <>
-            <h1 className="flex flex-col items-center justify-center gap-2 text-center text-3xl font-bold text-gray-800 sm:flex-row sm:gap-4 sm:text-5xl">
-              <UserPlus className="h-12 w-12 sm:h-16 sm:w-16" />
-              Invite Friends
+            <h1 className="flex flex-col items-center justify-center gap-2 text-center text-5xl font-bold text-gray-800 sm:flex-row sm:gap-4 sm:text-7xl">
+              Launch memecoins <br />with your friends
             </h1>
             {/* <p className="mb-6 text-center text-gray-600">
               Enter ETH addresses or ENS names
@@ -334,7 +333,7 @@ export default function Component() {
               className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed p-4 text-xl sm:gap-4 sm:p-6 sm:text-2xl"
             >
               <PlusCircle className="h-6 w-6 sm:h-8 sm:w-8" />
-              Add Another Friend
+              Add friend
             </Button>
             <Button
               onClick={handleInvite}
