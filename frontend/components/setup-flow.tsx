@@ -41,6 +41,7 @@ const paymasterClient = createPimlicoClient({
 });
 
 type Step =
+  | 'landing'
   | 'usernames'
   | 'processing'
   | 'verification'
@@ -64,7 +65,7 @@ interface InviteEntry {
 
 export default function Component() {
   const { address } = useAccount();
-  const [currentStep, setCurrentStep] = useState<Step>('usernames');
+  const [currentStep, setCurrentStep] = useState<Step>('landing');
   // const [currentStep, setCurrentStep] = useState<Step>('completion');
   const [error, setError] = useState<string | null>(null);
   const [entries, setEntries] = useState<InviteEntry[]>([
@@ -303,6 +304,24 @@ export default function Component() {
 
   const renderStep = () => {
     switch (currentStep) {
+      case 'landing':
+        return (
+          <div className="flex flex-col items-center justify-center space-y-8 text-center">
+            <h1 className="text-5xl sm:text-7xl font-bold text-gray-800">
+              bag bazaar
+            </h1>
+            <p className="text-xl sm:text-2xl text-gray-600 max-w-2xl">
+              Create shared wallets and launch memecoins with your friends
+            </p>
+            <Button 
+              onClick={() => setCurrentStep('usernames')}
+              className="h-16 sm:h-20 px-8 sm:px-12 text-2xl sm:text-3xl font-bold rounded-2xl bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+            >
+              Get Started 🚀
+            </Button>
+          </div>
+        );
+
       case 'usernames':
         return (
           <>
@@ -529,8 +548,8 @@ export default function Component() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-2 sm:p-4">
-      <div className="w-full max-w-3xl space-y-4 sm:space-y-8">
+    <div className="flex min-h-screen items-center justify-center p-4 sm:p-8">
+      <div className="w-full max-w-3xl space-y-6 sm:space-y-8">
         {renderStep()}
       </div>
     </div>
