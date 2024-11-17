@@ -7,17 +7,8 @@ import { Button } from '@/components/ui/button';
 import { TokenCreationForm } from '@/components/token-creation-form';
 import { BlockscoutLink } from '@/components/ui/blockscout-link';
 import { AddressInput } from '@/components/address-input';
-import {
-  PlusCircle,
-  UserPlus,
-  Send,
-  CirclePlus,
-  Loader2,
-  CheckCircle2,
-  ArrowRight
-} from 'lucide-react';
-import { useAddress, useName } from '@coinbase/onchainkit/identity';
-import { baseSepolia } from 'viem/chains';
+import { PlusCircle, Loader2, CheckCircle2, ArrowRight } from 'lucide-react';
+import { baseSepolia as base } from 'viem/chains';
 import { createPublicClient, http, parseEther } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { createPimlicoClient } from 'permissionless/clients/pimlico';
@@ -26,13 +17,13 @@ import { toSafeSmartAccount } from 'permissionless/accounts';
 import { createSmartAccountClient } from 'permissionless';
 
 const publicClient = createPublicClient({
-  chain: baseSepolia,
-  transport: http('https://sepolia.base.org')
+  chain: base,
+  transport: http('https://mainnet.base.org')
 });
 
 const paymasterClient = createPimlicoClient({
   transport: http(
-    `https://api.pimlico.io/v2/base-sepolia/rpc?apikey=${process.env.NEXT_PUBLIC_PIMLICO_API_KEY}`
+    `https://api.pimlico.io/v2/8453/rpc?apikey=${process.env.NEXT_PUBLIC_PIMLICO_API_KEY}`
   ),
   entryPoint: {
     address: entryPoint07Address,
@@ -64,7 +55,7 @@ interface InviteEntry {
 }
 
 export default function Component() {
-  const { address } = useAccount();
+  const { isConnected, address } = useAccount();
   const [currentStep, setCurrentStep] = useState<Step>('landing');
   // const [currentStep, setCurrentStep] = useState<Step>('completion');
   const [error, setError] = useState<string | null>(null);
@@ -184,7 +175,7 @@ export default function Component() {
       console.log('Creating smart account client...');
       const smartAccountClient = createSmartAccountClient({
         account: safeAccount,
-        chain: baseSepolia,
+        chain: base,
         paymaster: paymasterClient,
         bundlerTransport: http(
           `https://api.pimlico.io/v2/base-sepolia/rpc?apikey=${process.env.NEXT_PUBLIC_PIMLICO_API_KEY}`
@@ -351,7 +342,7 @@ export default function Component() {
             </Button>
             <Button
               onClick={handleInvite}
-              disabled={!entries.some((entry) => entry.isValid)}
+              disabled={!isConnected || !entries.some((entry) => entry.isValid)}
               className="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-blue-600 p-6 text-2xl font-bold text-white hover:bg-blue-700 disabled:opacity-50 sm:gap-4 sm:p-8 sm:text-3xl"
             >
               Create shared bag 🎒
