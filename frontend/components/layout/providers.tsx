@@ -17,14 +17,15 @@ import {
   baseSepolia,
   unichainSepolia,
   mantle,
-  morph
+  morph,
+  celo
 } from 'wagmi/chains';
 import { QueryClientProvider, QueryClient } from '@tanstack/react-query';
 
 const wagmiConfig = getDefaultConfig({
   appName: 'BagBazaar',
   projectId: process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID!,
-  chains: [base, baseSepolia, unichainSepolia, mantle, morph, arbitrum],
+  chains: [base, baseSepolia, unichainSepolia, mantle, morph, arbitrum, celo],
   ssr: true // If your dApp uses server side rendering (SSR)
 });
 

@@ -19,7 +19,8 @@ import {
   sepolia,
   unichainSepolia,
   morph,
-  arbitrum
+  arbitrum,
+  celo
 } from 'viem/chains';
 
 const TOKEN_FACTORY_ADDRESSES: { [chainId: number]: `0x${string}` } = {
@@ -30,7 +31,8 @@ const TOKEN_FACTORY_ADDRESSES: { [chainId: number]: `0x${string}` } = {
   [unichainSepolia.id]: '0x928073CC726e717b4C4f6a596198c4374266aEbe',
   [mantle.id]: '0x928073CC726e717b4C4f6a596198c4374266aEbe',
   [morph.id]: '0x928073CC726e717b4C4f6a596198c4374266aEbe',
-  [arbitrum.id]: '0x928073CC726e717b4C4f6a596198c4374266aEbe'
+  [arbitrum.id]: '0x928073CC726e717b4C4f6a596198c4374266aEbe',
+  [celo.id]: '0x928073CC726e717b4C4f6a596198c4374266aEbe'
 } as const;
 
 function getTokenFactoryAddress(chainId: number): `0x${string}` {
