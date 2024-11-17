@@ -54,8 +54,14 @@ export async function POST(request: Request) {
     }
 
     const data = await response.json();
-    console.log('data', data);
-    return NextResponse.json(data);
+    
+    // Extract just the walletPublicKey from the response
+    const walletPublicKey = data.user?.walletPublicKey;
+    
+    return NextResponse.json({
+      ...data,
+      walletPublicKey // Include this specifically in the response
+    });
   } catch (error) {
     console.error('Error creating embedded wallet:', error);
     return NextResponse.json(
