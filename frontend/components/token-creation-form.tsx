@@ -17,16 +17,20 @@ import {
   mainnet,
   mantle,
   sepolia,
-  unichainSepolia
+  unichainSepolia,
+  morph,
+  arbitrum
 } from 'viem/chains';
 
 const TOKEN_FACTORY_ADDRESSES: { [chainId: number]: `0x${string}` } = {
-  [base.id]: '0x250c9FB2b411B48273f69879007803790A6AeA47',
+  [base.id]: '0x928073CC726e717b4C4f6a596198c4374266aEbe',
   [baseSepolia.id]: '0x928073CC726e717b4C4f6a596198c4374266aEbe',
-  [mainnet.id]: '0x0000000000000000000000000000000000000000',
-  [sepolia.id]: '0x0000000000000000000000000000000000000000',
+  // [mainnet.id]: '0x0000000000000000000000000000000000000000',
+  // [sepolia.id]: '0x0000000000000000000000000000000000000000',
   [unichainSepolia.id]: '0x928073CC726e717b4C4f6a596198c4374266aEbe',
-  [mantle.id]: '0x928073CC726e717b4C4f6a596198c4374266aEbe'
+  [mantle.id]: '0x928073CC726e717b4C4f6a596198c4374266aEbe',
+  [morph.id]: '0x928073CC726e717b4C4f6a596198c4374266aEbe',
+  [arbitrum.id]: '0x928073CC726e717b4C4f6a596198c4374266aEbe'
 } as const;
 
 function getTokenFactoryAddress(chainId: number): `0x${string}` {
