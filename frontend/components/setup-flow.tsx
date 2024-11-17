@@ -339,10 +339,9 @@ export default function Component() {
             <Button
               onClick={handleInvite}
               disabled={!entries.some((entry) => entry.isValid)}
-              className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 p-6 text-2xl font-bold text-white hover:bg-blue-700 disabled:opacity-50 sm:gap-4 sm:p-8 sm:text-3xl"
+              className="h-12 flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 p-6 text-2xl font-bold text-white hover:bg-blue-700 disabled:opacity-50 sm:gap-4 sm:p-8 sm:text-3xl"
             >
-              <CirclePlus className="h-6 w-6 sm:h-8 sm:w-8" />
-              Create shared bag
+              Create shared bag 🎒
             </Button>
           </>
         );
@@ -373,7 +372,7 @@ export default function Component() {
             <h2 className="text-3xl font-bold sm:text-4xl">
               Shared bag is ready 🎒
             </h2>
-            <div className="mx-auto space-y-3 sm:space-y-4">
+            <div className="text-center mx-auto space-y-3 sm:space-y-4">
               <p className="text-xl text-gray-600"></p>
               {safeDeploymentStatus.safeAddress && (
                 <div className="rounded-lg p-4">

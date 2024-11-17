@@ -18,15 +18,15 @@ import SetupFlow from '@/components/setup-flow';
 export default function OverViewPage() {
   return (
     <PageContainer scrollable>
-      <div className="space-y-2">
+      <div className="h-dvh space-y-2">
         <div className="flex items-center justify-between space-y-2">
           <h2 className="text-2xl font-bold tracking-tight"></h2>
-          <div className="hidden items-center space-x-2 md:flex">
+          {/* <div className="hidden items-center space-x-2 md:flex">
             🌈 thanks for stopping by
-          </div>
+          </div> */}
         </div>
         <SetupFlow />
-
+        {/* 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -155,7 +155,7 @@ export default function OverViewPage() {
           <div className="col-span-4 md:col-span-3">
             <PieGraph />
           </div>
-        </div>
+        </div> */}
       </div>
     </PageContainer>
   );

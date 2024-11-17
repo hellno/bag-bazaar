@@ -13,6 +13,7 @@ import { getDefaultConfig, RainbowKitProvider } from '@rainbow-me/rainbowkit';
 import {
   mainnet,
   arbitrum,
+  arbitrumSepolia,
   base,
   baseSepolia,
   unichainSepolia,
@@ -25,7 +26,16 @@ import { QueryClientProvider, QueryClient } from '@tanstack/react-query';
 const wagmiConfig = getDefaultConfig({
   appName: 'BagBazaar',
   projectId: process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID!,
-  chains: [base, baseSepolia, unichainSepolia, mantle, morph, arbitrum, celo],
+  chains: [
+    base,
+    // baseSepolia,
+    unichainSepolia,
+    mantle,
+    morph,
+    // arbitrum,
+    // arbitrumSepolia,
+    // celo
+  ],
   ssr: true // If your dApp uses server side rendering (SSR)
 });
 

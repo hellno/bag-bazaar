@@ -1,22 +1,20 @@
 import React from 'react';
 import { SidebarTrigger } from '../ui/sidebar';
 import { Separator } from '../ui/separator';
-import { Breadcrumbs } from '../breadcrumbs';
 import SearchInput from '../search-input';
 import { UserNav } from './user-nav';
 import ThemeToggle from './ThemeToggle/theme-toggle';
-import { ConnectButton } from '@rainbow-me/rainbowkit';
 
 export default function Header() {
   return (
-    <header className="flex h-13 sm:h-16 shrink-0 items-center justify-between gap-1 sm:gap-2 px-2 sm:px-4 transition-[width,height] ease-linear">
+    <header className="flex flex-col shrink-0 items-center justify-between gap-1 px-2 transition-[width,height] ease-linear sm:h-16 sm:gap-2 sm:px-4 md:flex-row">
       <div className="flex items-center gap-1 sm:gap-2">
-        <h2 className="text-lg sm:text-2xl font-bold tracking-tight truncate">
-          welcome to the bag bazaar 💰✨
-        </h2>
+        <h1 className="mt-12 truncate text-2xl font-bold tracking-tight sm:text-4xl">
+          bag bazaar 💰✨
+        </h1>
         {/* <SidebarTrigger className="-ml-1" />
         <Separator orientation="vertical" className="mr-2 h-4" />
-        <Breadcrumbs /> */}
+        */}
       </div>
 
       <div className="flex items-center gap-1 sm:gap-2">

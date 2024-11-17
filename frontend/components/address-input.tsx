@@ -108,7 +108,7 @@ export function AddressInput({
       <div className="flex items-center gap-4">
         <Input
           type="text"
-          placeholder="0x... or name.eth or email@example.com"
+          placeholder="name.eth or email@example.com"
           value={input}
           onChange={handleInputChange}
           className={`w-full rounded-lg p-6 text-3xl ${
