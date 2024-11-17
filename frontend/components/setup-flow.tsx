@@ -243,6 +243,9 @@ export default function Component() {
       const emailEntries = validEntries.filter(
         (entry) => entry.input.includes('@') && entry.input.includes('.')
       );
+      const nonEmailEntries = validEntries.filter(
+        (entry) => !entry.input.includes('@') || !entry.input.includes('.')
+      );
 
       console.log('emailEntries', emailEntries);
       // Create embedded wallets in parallel
@@ -270,8 +273,20 @@ export default function Component() {
       const embeddedWallets = await Promise.all(walletPromises);
       console.log('Created embedded wallets:', embeddedWallets);
 
+      // Create combined entries array with both embedded wallet addresses and non-email addresses
+      const combinedEntries = [
+        ...nonEmailEntries,
+        ...embeddedWallets.map((wallet) => ({
+          input: wallet.walletPublicKey,
+          resolvedAddress: wallet.walletPublicKey as string,
+          isValid: true
+        }))
+      ];
+
+      console.log('Combined entries for Safe deployment:', combinedEntries);
+
       // Deploy the Safe with all addresses (including embedded wallet addresses)
-      const safeAddress = await deploySafe(validEntries);
+      const safeAddress = await deploySafe(combinedEntries);
       console.log('safeAddress', safeAddress);
 
       await new Promise((resolve) => setTimeout(resolve, 1000));
