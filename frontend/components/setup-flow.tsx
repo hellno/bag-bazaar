@@ -305,8 +305,8 @@ export default function Component() {
       case 'usernames':
         return (
           <>
-            <h1 className="flex items-center justify-center gap-4 text-center text-5xl font-bold text-gray-800">
-              <UserPlus className="h-16 w-16" />
+            <h1 className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-center text-3xl sm:text-5xl font-bold text-gray-800">
+              <UserPlus className="h-12 w-12 sm:h-16 sm:w-16" />
               Invite Friends
             </h1>
             {/* <p className="mb-6 text-center text-gray-600">
@@ -330,17 +330,17 @@ export default function Component() {
             <Button
               onClick={addEntry}
               variant="outline"
-              className="flex w-full items-center justify-center gap-4 rounded-lg border-2 border-dashed p-6 text-2xl"
+              className="flex w-full items-center justify-center gap-2 sm:gap-4 rounded-lg border-2 border-dashed p-4 sm:p-6 text-xl sm:text-2xl"
             >
-              <PlusCircle className="h-8 w-8" />
+              <PlusCircle className="h-6 w-6 sm:h-8 sm:w-8" />
               Add Another Friend
             </Button>
             <Button
               onClick={handleInvite}
               disabled={!entries.some((entry) => entry.isValid)}
-              className="flex w-full items-center justify-center gap-4 rounded-lg bg-blue-600 p-8 text-3xl font-bold text-white hover:bg-blue-700 disabled:opacity-50"
+              className="flex w-full items-center justify-center gap-2 sm:gap-4 rounded-lg bg-blue-600 p-6 sm:p-8 text-2xl sm:text-3xl font-bold text-white hover:bg-blue-700 disabled:opacity-50"
             >
-              <CirclePlus className="h-8 w-8" />
+              <CirclePlus className="h-6 w-6 sm:h-8 sm:w-8" />
               Create shared bag
             </Button>
           </>
@@ -348,12 +348,12 @@ export default function Component() {
 
       case 'processing':
         return (
-          <div className="space-y-6 text-center">
-            <h2 className="text-4xl font-bold">Creating shared bag 💰</h2>
+          <div className="space-y-4 sm:space-y-6 text-center">
+            <h2 className="text-3xl sm:text-4xl font-bold">Creating shared bag 💰</h2>
             <div className="flex justify-center">
-              <Loader2 className="h-16 w-16 animate-spin text-blue-600" />
+              <Loader2 className="h-12 w-12 sm:h-16 sm:w-16 animate-spin text-blue-600" />
             </div>
-            <p className="text-xl text-gray-600">
+            <p className="text-lg sm:text-xl text-gray-600">
               {safeDeploymentStatus.isDeploying
                 ? 'Deploying Safe smart account...'
                 : 'Processing your invitations...'}
@@ -366,9 +366,9 @@ export default function Component() {
 
       case 'verification':
         return (
-          <div className="space-y-6 text-center">
-            <h2 className="text-4xl font-bold">Shared bag is ready 🎒</h2>
-            <div className="mx-auto space-y-4">
+          <div className="space-y-4 sm:space-y-6 text-center">
+            <h2 className="text-3xl sm:text-4xl font-bold">Shared bag is ready 🎒</h2>
+            <div className="mx-auto space-y-3 sm:space-y-4">
               <p className="text-xl text-gray-600"></p>
               {safeDeploymentStatus.safeAddress && (
                 <div className="rounded-lg p-4">
@@ -382,9 +382,9 @@ export default function Component() {
               )}
               <Button
                 onClick={() => setCurrentStep('completion')}
-                className="flex items-center justify-center gap-2 p-6 text-xl"
+                className="flex items-center justify-center gap-2 p-4 sm:p-6 text-lg sm:text-xl"
               >
-                Continue <ArrowRight className="h-6 w-6" />
+                Continue <ArrowRight className="h-5 w-5 sm:h-6 sm:w-6" />
               </Button>
             </div>
           </div>
@@ -417,11 +417,11 @@ export default function Component() {
 
       case 'token-creation':
         return (
-          <div className="space-y-6">
-            <h2 className="text-center text-4xl font-bold">
+          <div className="space-y-4 sm:space-y-6">
+            <h2 className="text-center text-3xl sm:text-4xl font-bold">
               Create Your Token ✨
             </h2>
-            <div className="border-gray rounded-lg border p-8">
+            <div className="border-gray rounded-lg border p-4 sm:p-8">
               {/* <p className="mb-8 text-center text-xl text-gray-600">
                 Choose a name and symbol for your shared token
               </p> */}
@@ -484,11 +484,11 @@ export default function Component() {
 
       case 'token-success':
         return (
-          <div className="space-y-6 text-center">
-            <h2 className="text-4xl font-bold">Success! 🎉</h2>
-            <CheckCircle2 className="mx-auto h-16 w-16 text-green-500" />
-            <div className="rounded-lg bg-gray-50 p-6">
-              <p className="mb-4 text-xl text-gray-600">
+          <div className="space-y-4 sm:space-y-6 text-center">
+            <h2 className="text-3xl sm:text-4xl font-bold">Success! 🎉</h2>
+            <CheckCircle2 className="mx-auto h-12 w-12 sm:h-16 sm:w-16 text-green-500" />
+            <div className="rounded-lg bg-gray-50 p-4 sm:p-6">
+              <p className="mb-3 sm:mb-4 text-lg sm:text-xl text-gray-600">
                 Your token has been launched successfully!
               </p>
               <div className="mb-4 font-mono text-sm">
@@ -513,8 +513,8 @@ export default function Component() {
                 )}
               </div>
               <a href={`https://warpcast.com`}>
-                <Button className="flex w-full items-center justify-center gap-2 p-6 text-xl">
-                  Share on Farcaster <ArrowRight className="h-6 w-6" />
+                <Button className="flex w-full items-center justify-center gap-2 p-4 sm:p-6 text-lg sm:text-xl">
+                  Share on Farcaster <ArrowRight className="h-5 w-5 sm:h-6 sm:w-6" />
                 </Button>
               </a>
             </div>
@@ -524,8 +524,8 @@ export default function Component() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
-      <div className="w-full max-w-3xl space-y-8">{renderStep()}</div>
+    <div className="flex min-h-screen items-center justify-center p-2 sm:p-4">
+      <div className="w-full max-w-3xl space-y-4 sm:space-y-8">{renderStep()}</div>
     </div>
   );
 }
