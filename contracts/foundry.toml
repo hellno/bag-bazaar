@@ -45,7 +45,7 @@
 [rpc_endpoints]
 #  arbitrum = "https://arbitrum-mainnet.infura.io/v3/${API_KEY_INFURA}"
 #  avalanche = "https://avalanche-mainnet.infura.io/v3/${API_KEY_INFURA}"
-#  base = "https://mainnet.base.org"
+  base = "https://mainnet.base.org"
   base_sep = "https://sepolia.base.org"
 #  bnb_smart_chain = "https://bsc-dataseed.binance.org"
 #  gnosis_chain = "https://rpc.gnosischain.com"
@@ -59,3 +59,4 @@
   mantle = "https://rpc.mantle.xyz"
   morph = "https://rpc-quicknode-holesky.morphl2.io"
   arb_sep = "https://arbitrum-sepolia.gateway.tenderly.co"
+  celo = "https://alfajores-forno.celo-testnet.org"

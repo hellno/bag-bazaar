@@ -70,6 +70,7 @@ contract SocialDexDeployer is Ownable {
         string calldata _name,
         string calldata _symbol,
         uint256 _supply,
+        uint256 _creatorCut,
         int24 _initialTick,
         uint24 _fee,
         bytes32 _salt,
@@ -90,10 +91,12 @@ contract SocialDexDeployer is Ownable {
 
         require(address(token) < weth, "Invalid salt");
         require(_supply >= _supply, "Invalid supply amount");
-        uint256 creatorAmt = (_supply * protocolCut) / 1000;
+        uint256 creatorAmt = (_supply * _creatorCut) / 1000;
         uint256 remainder = _supply - creatorAmt;
         // tx to the creator the same share of protocolcut
-        token.transfer(_deployer, creatorAmt);
+        if (creatorAmt > 0) {
+            token.transfer(_deployer, creatorAmt);
+        }
 
         uint160 sqrtPriceX96 = _initialTick.getSqrtRatioAtTick();
         address pool = uniswapV3Factory.createPool(address(token), weth, _fee);

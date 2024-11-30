@@ -13,14 +13,14 @@ import {console2} from "forge-std/src/console2.sol";
 contract Deploy is BaseScript {
     function run() public broadcast returns (SocialDexDeployer factory) {
 
-        address guy = msg.sender;
+        address guy = 0x5423d9035f6EF88206E7d3d05423b655f29f9Db3;
 
         LockerFactory lFactory = new LockerFactory();
-        address weth = 0x9661Ad5FAE2e37B5fe636499659225F5D18Ddc5e;
-        address uniFactory = 0x8520a30af22d6599aD863e1264f3553b42A33BDC;
-        address positionManager = 0x1De430dbD59783390dab0BDDfACA23A0E1B23c67;
+        address weth = 0x4200000000000000000000000000000000000006;
+        address uniFactory = 0x33128a8fC17869897dcE68Ed026d694621f6FDfD;
+        address positionManager = 0x03a520b32C04BF3bEEf7BEb72E919cf822Ed34f1;
         uint64 defaultLockingPeriod = 4132317178;
-        address swapRouter = 0x55cDd9462ac2F63806854Ff4C82D15F533cbDC28;
+        address swapRouter = 0x2626664c2603336E57B271c5C0b26F421741e481;
 
 
         factory = new SocialDexDeployer(
